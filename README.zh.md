@@ -48,10 +48,10 @@ DeepSeek Harness Web 界面的工作区路径引用插件。在输入框输入 `
 ## 安装或更新
 
 ```sh
-dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.6.8.tar.gz
+dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.6.9.tar.gz
 ```
 
-已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.6.8`。
+已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.6.9`。
 
 ## 文件过滤
 
@@ -97,6 +97,7 @@ dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/re
 - 手动输入的文本和选择器中的选择可以生成引用消息。默认设置开启时，粘贴文本中的 `@` 会被忽略。
 - 点击引用路径时会调用 Harness 的 `host.openPath` 端点。
 - 每个会话的路径索引缓存 30 秒。
+- 引用栏只渲染当前会话已完成索引且确实存在的路径；未知的 `@文本` 保持普通文本。
 - `@路径` 不能包含空白字符或另一个 `@` 字符。
 - `maxIndexedFiles` 限制选择器显示的结果。手动输入的路径只要位于工作区且确实存在，仍然可以引用。
 

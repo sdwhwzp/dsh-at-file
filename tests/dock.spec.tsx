@@ -24,6 +24,7 @@ function props(over: {
   onOpen?: (relative: string) => void
   setDraft?: (text: string) => void
   enabled?: boolean
+  indexed?: readonly string[]
 } = {}): AtFileDockProps {
   const stub = {
     session: {},
@@ -45,6 +46,8 @@ function props(over: {
     onOpen: over.onOpen ?? (() => {}),
     useScope: (selector: (snapshot: { value?: { enabled?: boolean } }) => boolean) =>
       selector(over.enabled === undefined ? {} : { value: { enabled: over.enabled } }),
+    useIndex: (selector: (paths: readonly string[]) => unknown) =>
+      selector(over.indexed ?? ['a.ts', 'b.ts', 'dir', 'src/b.ts', 'src/client/view.ts']),
     t,
   }
   return stub as unknown as AtFileDockProps
@@ -64,14 +67,20 @@ function click(element: Element | null): void {
 
 describe('draftMentions', () => {
   it('parses @path tokens with their spans, stripping the directory slash', () => {
-    expect(draftMentions('a @x.ts and @dir/ end')).toEqual([
+    expect(draftMentions('a @x.ts and @dir/ end', new Set(['x.ts', 'dir']))).toEqual([
       { relative: 'x.ts', start: 2, end: 7 },
       { relative: 'dir', start: 12, end: 17 },
     ])
   })
 
   it('deduplicates repeated tokens', () => {
-    expect(draftMentions('@a.ts @a.ts')).toEqual([{ relative: 'a.ts', start: 0, end: 5 }])
+    expect(draftMentions('@a.ts @a.ts', new Set(['a.ts']))).toEqual([{ relative: 'a.ts', start: 0, end: 5 }])
+  })
+
+  it('keeps unknown and greedy Chinese tokens as ordinary text', () => {
+    const indexed = new Set(['config.json', 'settings.json'])
+    expect(draftMentions('compare @config and @settings', indexed)).toEqual([])
+    expect(draftMentions('@config和settings的差异', indexed)).toEqual([])
   })
 
   it('computes the token-free draft', () => {
@@ -90,6 +99,12 @@ describe('FilesDock', () => {
 
   it('renders nothing when the draft has no @path tokens', () => {
     const { root, container } = mount(<FilesDock {...props({ draft: 'plain text' })} />)
+    expect(container.querySelectorAll('[data-at-file-row]')).toHaveLength(0)
+    root.unmount()
+  })
+
+  it('renders nothing when a draft token is absent from the workspace index', () => {
+    const { root, container } = mount(<FilesDock {...props({ draft: '@missing.ts', indexed: ['a.ts'] })} />)
     expect(container.querySelectorAll('[data-at-file-row]')).toHaveLength(0)
     root.unmount()
   })

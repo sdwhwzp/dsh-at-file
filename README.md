@@ -48,10 +48,10 @@ The default index skips common version-control directories, IDE metadata, depend
 ## Install or Update
 
 ```sh
-dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.6.8.tar.gz
+dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.6.9.tar.gz
 ```
 
-Use the same command to update an existing installation. Restart `dsh web` after installation so the Host and browser client load version `0.6.8`.
+Use the same command to update an existing installation. Restart `dsh web` after installation so the Host and browser client load version `0.6.9`.
 
 ## File Filters
 
@@ -97,6 +97,7 @@ Omitting `ignoreDirs` keeps the built-in list. When you provide it, include ever
 - Reference markers are created from typed text and picker selections. Pasted `@` tokens are ignored when the default setting is enabled.
 - Clicking a referenced path uses the Harness `host.openPath` endpoint.
 - The picker index is cached per session for 30 seconds.
+- The reference dock only renders tokens that exist in the current session's settled workspace index. Unknown `@text` remains ordinary text.
 - An `@path` token cannot contain whitespace or another `@` character.
 - `maxIndexedFiles` limits picker results. A manually entered path can still be referenced when it exists inside the workspace.
 

@@ -13,6 +13,7 @@ import {
   createSnapshotStore,
   type ClientContext,
   type ISessions,
+  type SnapshotStore,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import type { InputTriggerServiceContract } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 // Type-only: the conversation SlotMap / standard-kit merges for the dock seat.
@@ -146,22 +147,39 @@ export function apply(ctx: ClientContext): void {
   const sessions = ctx.get('sessions') as unknown as ISessions
   const t = ctx.locale.bind(NS)
 
-  // Relative → entry map backing the dock's open action (resolves a draft
-  // token to its absolute path from the last settled index).
-  const entryByRel = new Map<string, FileEntry>()
+  const EMPTY_INDEX: readonly string[] = Object.freeze([])
+  const indexScopes = new Map<SessionId, SnapshotStore<readonly string[]>>()
+  const indexScopeOf = (sessionId: SessionId): SnapshotStore<readonly string[]> => {
+    const existing = indexScopes.get(sessionId)
+    if (existing !== undefined) return existing
+    const created = createSnapshotStore<readonly string[]>(EMPTY_INDEX)
+    indexScopes.set(sessionId, created)
+    return created
+  }
+  // Per-session relative → entry maps back the dock's validation and open action.
+  const entriesBySession = new Map<SessionId, ReadonlyMap<string, FileEntry>>()
   const search = async (sessionId: SessionId, signal: AbortSignal): Promise<readonly FileEntry[]> => {
     if (atFile === undefined) throw new Error('dsh-at-file: the atFile Remote is not mounted')
     const result = await atFile.search(sessionId, signal)
-    if (!result.ok) throw new Error(`search failed: ${result.error.code}: ${result.error.message}`)
-    for (const entry of result.value) entryByRel.set(entry.relative, entry)
+    if (!result.ok) {
+      entriesBySession.delete(sessionId)
+      indexScopeOf(sessionId).set(EMPTY_INDEX)
+      throw new Error(`search failed: ${result.error.code}: ${result.error.message}`)
+    }
+    entriesBySession.set(sessionId, new Map(result.value.map(entry => [entry.relative, entry])))
+    indexScopeOf(sessionId).set(result.value.map(entry => entry.relative))
     return result.value
   }
 
   const { source, invalidateAll } = createAtFileSource({ search })
+  const clearIndexes = (): void => {
+    entriesBySession.clear()
+    for (const index of indexScopes.values()) index.set(EMPTY_INDEX)
+  }
   // Reconnect may have rebuilt the host: cached indexes and path maps die with it.
   ctx.on('connection/reset', () => {
     invalidateAll()
-    entryByRel.clear()
+    clearIndexes()
     void loadSettings()
   })
   // The settings switch gates the picker live. The schema default applies
@@ -176,7 +194,7 @@ export function apply(ctx: ClientContext): void {
     const nextIgnoreFilesKey = ignoreFilesSettingsKey(value)
     if (ignoreFilesKey !== undefined && ignoreFilesKey !== nextIgnoreFilesKey) {
       invalidateAll()
-      entryByRel.clear()
+      clearIndexes()
     }
     ignoreFilesKey = nextIgnoreFilesKey
     if (enabled && !sourceRegistered) {
@@ -213,8 +231,8 @@ export function apply(ctx: ClientContext): void {
     })
   }
 
-  const openRelative = (relative: string): void => {
-    const entry = entryByRel.get(relative)
+  const openRelative = (sessionId: SessionId, relative: string): void => {
+    const entry = entriesBySession.get(sessionId)?.get(relative)
     if (entry === undefined) {
       console.error('[dsh-at-file] open failed: no index entry for', relative)
       return
@@ -227,9 +245,9 @@ export function apply(ctx: ClientContext): void {
     id: 'at-file',
     order: 20,
     locale: NS,
-    inject: (): AtFileDockInjected => ({
-      onOpen: openRelative,
-      hooks: { scope },
+    inject: (sessionId): AtFileDockInjected => ({
+      onOpen: relative => { openRelative(sessionId, relative) },
+      hooks: { scope, index: indexScopeOf(sessionId) },
     }),
   }, FilesDock))
 

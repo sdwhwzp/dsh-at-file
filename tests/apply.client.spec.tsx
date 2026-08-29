@@ -119,7 +119,25 @@ function settingsSection(booted: Awaited<ReturnType<typeof boot>>): RegisteredSe
   return section as RegisteredSettingsSection
 }
 
+interface RegisteredDock {
+  id: string
+  order: number
+  locale: string
+  inject: (sessionId: SessionId) => {
+    onOpen: (relative: string) => void
+    hooks: { index: { getSnapshot: () => readonly string[] } }
+  }
+}
+
+function registeredDock(booted: Awaited<ReturnType<typeof boot>>): RegisteredDock {
+  const dock = booted.slotsRegister.mock.calls
+    .find(call => call[0]?.name === 'conversation.input.dock')?.[0] as RegisteredDock | undefined
+  expect(dock).toBeDefined()
+  return dock as RegisteredDock
+}
+
 const s1 = { sessionId: 's1' as SessionId }
+const s2 = { sessionId: 's2' as SessionId }
 const signal = () => new AbortController().signal
 
 describe('dsh-at-file client apply', () => {
@@ -372,18 +390,32 @@ describe('dsh-at-file client apply', () => {
   it('registers the dock with its inject face routed to the host opener', async () => {
     const atFileSearch = vi.fn(async () => ({ ok: true as const, value: [{ path: '/ws/a.ts', relative: 'a.ts', kind: 'file' }] }))
     const booted = await boot({ atFileSearch })
-    const dock = booted.slotsRegister.mock.calls.find(call => call[0]?.name === 'conversation.input.dock')?.[0] as {
-      id: string
-      order: number
-      locale: string
-      inject: (sessionId: string) => { onOpen: (relative: string) => void }
-    }
+    const dock = registeredDock(booted)
     expect(dock).toMatchObject({ id: 'at-file', order: 20, locale: NS })
     // The open resolves the relative token through the index the search wrapper
     // populates; drive one search first.
     await registered(booted).candidates(s1, { query: 'a', position: 'inline', signal: signal() })
-    dock.inject('s1').onOpen('a.ts')
+    expect(dock.inject(s1.sessionId).hooks.index.getSnapshot()).toEqual(['a.ts'])
+    dock.inject(s1.sessionId).onOpen('a.ts')
     expect(booted.openPath).toHaveBeenCalledWith({ path: '/ws/a.ts' })
+  })
+
+  it('keeps dock indexes session-scoped and clears them on reconnect', async () => {
+    const atFileSearch = vi.fn(async (sessionId: SessionId) => ({
+      ok: true as const,
+      value: [{ path: `/ws/${String(sessionId)}.ts`, relative: `${String(sessionId)}.ts`, kind: 'file' as const }],
+    }))
+    const booted = await boot({ atFileSearch })
+    await registered(booted).candidates(s1, { query: '', position: 'leading', signal: signal() })
+    await registered(booted).candidates(s2, { query: '', position: 'leading', signal: signal() })
+    const dock = registeredDock(booted)
+    const first = dock.inject(s1.sessionId).hooks.index
+    const second = dock.inject(s2.sessionId).hooks.index
+    expect(first.getSnapshot()).toEqual(['s1.ts'])
+    expect(second.getSnapshot()).toEqual(['s2.ts'])
+    booted.ctx.emit('connection/reset')
+    expect(first.getSnapshot()).toEqual([])
+    expect(second.getSnapshot()).toEqual([])
   })
 
   it('registers directory navigation against the current session controller', async () => {
@@ -437,8 +469,7 @@ describe('dsh-at-file client apply', () => {
       const atFileSearch = vi.fn(async () => ({ ok: true as const, value: [{ path: '/ws/a.ts', relative: 'a.ts', kind: 'file' }] }))
       const booted = await boot({ atFileSearch, openPath: async () => ({ result: { ok: false, error: { message: 'nope' } } }) })
       await registered(booted).candidates(s1, { query: 'a', position: 'inline', signal: signal() })
-      const dock = booted.slotsRegister.mock.calls.find(call => call[0]?.name === 'conversation.input.dock')?.[0] as { inject: (id: string) => { onOpen: (p: string) => void } }
-      dock.inject('s1').onOpen('a.ts')
+      registeredDock(booted).inject(s1.sessionId).onOpen('a.ts')
       await Promise.resolve()
       expect(errorSpy).toHaveBeenCalledWith('[dsh-at-file] open failed:', 'nope')
     } finally {
@@ -450,8 +481,7 @@ describe('dsh-at-file client apply', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       const booted = await boot()
-      const dock = booted.slotsRegister.mock.calls.find(call => call[0]?.name === 'conversation.input.dock')?.[0] as { inject: (id: string) => { onOpen: (p: string) => void } }
-      dock.inject('s1').onOpen('missing.ts')
+      registeredDock(booted).inject(s1.sessionId).onOpen('missing.ts')
       expect(errorSpy).toHaveBeenCalledWith('[dsh-at-file] open failed: no index entry for', 'missing.ts')
     } finally {
       errorSpy.mockRestore()
@@ -464,8 +494,7 @@ describe('dsh-at-file client apply', () => {
       const atFileSearch = vi.fn(async () => ({ ok: true as const, value: [{ path: '/ws/a.ts', relative: 'a.ts', kind: 'file' }] }))
       const booted = await boot({ atFileSearch, openPath: async () => { throw new Error('carrier down') } })
       await registered(booted).candidates(s1, { query: 'a', position: 'inline', signal: signal() })
-      const dock = booted.slotsRegister.mock.calls.find(call => call[0]?.name === 'conversation.input.dock')?.[0] as { inject: (id: string) => { onOpen: (p: string) => void } }
-      dock.inject('s1').onOpen('a.ts')
+      registeredDock(booted).inject(s1.sessionId).onOpen('a.ts')
       await Promise.resolve()
       expect(errorSpy).toHaveBeenCalledWith('[dsh-at-file] open failed:', expect.any(Error))
     } finally {

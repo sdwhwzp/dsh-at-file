@@ -4,9 +4,10 @@
  * is the user's path link before and after send: clicking the path opens the
  * file on the host, the × removes the token from the draft. The draft holds
  * plain-text @path tokens (the plain-text-reference decision), so the dock
- * parses them directly; the plugin settings source's live enable value gates
- * the strip.
+ * parses them and checks them against the current session's settled workspace
+ * index; the plugin settings source's live enable value gates the strip.
  */
+import { useMemo } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
 import type { AtFileSettings } from '../contract.ts'
@@ -14,11 +15,12 @@ import { isProtectedMentionToken } from '../paste.ts'
 
 export interface AtFileSettingsSnapshot { readonly value: AtFileSettings }
 export type AtFileSettingsSource = ObservableSnapshot<AtFileSettingsSnapshot>
+export type AtFileIndexSource = ObservableSnapshot<readonly string[]>
 
 /** Injected business face: open one relative path, and the live settings source. */
 export interface AtFileDockInjected {
   onOpen: (relative: string) => void
-  hooks: { scope: AtFileSettingsSource }
+  hooks: { scope: AtFileSettingsSource; index: AtFileIndexSource }
 }
 
 /** Full dock entry props: InputZone owner share + session standard kit + injected face + locale seat. */
@@ -34,15 +36,15 @@ interface DraftMention {
   readonly end: number
 }
 
-/** Parse the draft's @path tokens in order, deduplicating by relative path. */
-export function draftMentions(draft: string): readonly DraftMention[] {
+/** Parse indexed @path tokens in order, deduplicating by relative path. */
+export function draftMentions(draft: string, indexed: ReadonlySet<string>): readonly DraftMention[] {
   const seen = new Set<string>()
   const out: DraftMention[] = []
   for (const match of draft.matchAll(MENTION_PATTERN)) {
     const raw = match[1] as string
     if (isProtectedMentionToken(raw)) continue
     const relative = raw.endsWith('/') ? raw.slice(0, -1) : raw
-    if (relative === '' || seen.has(relative)) continue
+    if (relative === '' || !indexed.has(relative) || seen.has(relative)) continue
     seen.add(relative)
     out.push({ relative, start: match.index, end: match.index + match[0].length })
   }
@@ -60,10 +62,12 @@ export function withoutToken(draft: string, start: number, end: number): string 
  * @param props - runtime (input currency + actions), inject, and locale shares.
  * @returns the dock strip, or null.
  */
-export function FilesDock({ input, inputActions, onOpen, useScope, t }: AtFileDockProps) {
+export function FilesDock({ input, inputActions, onOpen, useScope, useIndex, t }: AtFileDockProps) {
   const enabled = useScope(snapshot => snapshot.value?.enabled ?? true)
+  const indexed = useIndex(paths => paths)
+  const indexedSet = useMemo(() => new Set(indexed), [indexed])
   if (!enabled) return null
-  const mentions = draftMentions(input.draft)
+  const mentions = draftMentions(input.draft, indexedSet)
   if (mentions.length === 0) return null
   return (
     <div className="dsh_atFile_rail" role="group" aria-label={t('dock.aria')} data-at-file-dock>
