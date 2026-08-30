@@ -113,7 +113,6 @@ export function AtFileSection({
   const globalFiles = normalizeIgnoreFiles(settings?.ignoreFiles ?? DEFAULT_IGNORE_FILES)
   const workspaceRules = settings?.workspaceIgnoreFiles ?? []
   const workspaces = useWorkspaces(snapshot => snapshot.items)
-  const recentWorkspaceId = useWorkspaces(snapshot => snapshot.recentWorkspaceId)
   const currentCwd = useSessions(snapshot => {
     const current = snapshot.current
     return current === undefined ? undefined : snapshot.byId[current]?.cwd
@@ -126,7 +125,6 @@ export function AtFileSection({
     return rows
   }, [currentCwd, workspaces])
   const preferredWorkspace = currentCwd
-    ?? workspaces.find(workspace => workspace.workspaceId === recentWorkspaceId)?.path
     ?? workspaceOptions[0]?.path
     ?? ''
 

@@ -5,6 +5,8 @@
 
 Workspace path references for the DeepSeek Harness web interface. Type `@` in the composer to search the current workspace and insert a file or directory path.
 
+Installing this bundle disables the Harness `ui-reference` browser entry. The `@` menu therefore contains only files and directories from the active session's workspace; it does not query or display Session references.
+
 ![@ path picker](assets/screenshots/workspace-path-picker.png)
 
 ![File reference in the composer](assets/screenshots/file-mention-composer.png)
@@ -91,7 +93,7 @@ Omitting `ignoreDirs` keeps the built-in list. When you provide it, include ever
 
 ## Path Handling
 
-- The picker indexes regular files, directories, and symbolic links in the active workspace. Directory links are traversed through their workspace-relative alias, while links back to an ancestor are kept visible without being re-entered.
+- The picker indexes regular files, directories, and symbolic links whose canonical targets remain inside the active workspace. Directory links are traversed through their workspace-relative alias, while links back to an ancestor are kept visible without being re-entered. Links that leave the workspace are omitted.
 - Global and workspace file-name filters are combined during the Host index walk, before entries count toward `maxIndexedFiles` or reach the browser.
 - The Host accepts workspace-relative paths. Absolute paths and paths that escape the workspace are ignored.
 - Reference markers are created from typed text and picker selections. Pasted `@` tokens are ignored when the default setting is enabled.
@@ -113,6 +115,8 @@ pnpm run build
 ```
 
 The development setup expects the official `deepseek-ai/deepseek-harness` repository at `../deepseek-harness`, its default clone directory. Built files under `lib/` are committed so profile installation does not require package build scripts.
+
+When a deployment installs this package through a local `link:`, run `node scripts/link-runtime-peers.mjs` before starting DSH. The script uses `DSH_RUNTIME_NODE_MODULES`, `~/apps/dsh-runtime/current/node_modules`, or an adjacent Harness checkout and fails if the matching Host packages cannot be found.
 
 ## License
 

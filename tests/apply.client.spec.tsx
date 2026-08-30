@@ -7,7 +7,7 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
 import { apply, inject } from '../src/client/index.ts'
 import { AT_FILE_REMOTE } from '../src/client/remote.ts'
 import { NS, en, zh } from '../src/client/locales.ts'
@@ -22,7 +22,7 @@ interface BootOptions {
   atFileSearch?: (sessionId: SessionId, signal: AbortSignal) => Promise<RemoteResult<readonly { path: string; relative: string; kind: 'file' | 'dir' }[]>>
   atFileGetSettings?: () => Promise<RemoteResult<AtFileSettings>>
   atFileUpdateSettings?: (update: AtFileSettingsUpdate) => Promise<RemoteResult<AtFileSettings>>
-  openPath?: () => Promise<{ result: { ok: true } | { ok: false; error: { message: string } } }>
+  openPath?: () => Promise<{ ok: true; value: { opened: true } } | { ok: false; error: { message: string } }>
   enabled?: boolean
   ignorePastedMentions?: boolean
   ignoreFiles?: readonly string[]
@@ -45,7 +45,7 @@ async function boot(options: BootOptions = {}) {
   const bind = vi.fn(() => (key: string, params?: Record<string, string>) => (params?.message ? `${key}: ${params.message}` : key))
   const slotsRegister = vi.fn()
   const slotsInject = vi.fn((_name: string, factory: () => void) => { factory() })
-  const openPath = vi.fn(options.openPath ?? (async () => ({ result: { ok: true as const } })))
+  const openPath = vi.fn(options.openPath ?? (async () => ({ ok: true as const, value: { opened: true as const } })))
   let settings: AtFileSettings = {
     enabled: options.enabled ?? true,
     ignoreFiles: [...options.ignoreFiles ?? DEFAULT_IGNORE_FILES],
@@ -61,8 +61,8 @@ async function boot(options: BootOptions = {}) {
     return { ok: true as const, value: settings }
   }))
   ctx.provide('inputTriggers', { registerSource, sessionOf })
-  ctx.provide('connection', { api: { host: { openPath } } })
-  ctx.provide('remote', { $mount: mount })
+  ctx.provide('connection', {})
+  ctx.provide('remote', { $mount: mount, session: { openWorkspacePath: openPath } })
   if (options.withoutNamespace !== true) {
     ctx.provide('remote.atFile', {
       search: options.atFileSearch ?? (async () => ({ ok: true as const, value: [] })),
@@ -397,7 +397,7 @@ describe('dsh-at-file client apply', () => {
     await registered(booted).candidates(s1, { query: 'a', position: 'inline', signal: signal() })
     expect(dock.inject(s1.sessionId).hooks.index.getSnapshot()).toEqual(['a.ts'])
     dock.inject(s1.sessionId).onOpen('a.ts')
-    expect(booted.openPath).toHaveBeenCalledWith({ path: '/ws/a.ts' })
+    expect(booted.openPath).toHaveBeenCalledWith({ sessionId: 's1', path: '/ws/a.ts' })
   })
 
   it('keeps dock indexes session-scoped and clears them on reconnect', async () => {
@@ -467,7 +467,7 @@ describe('dsh-at-file client apply', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       const atFileSearch = vi.fn(async () => ({ ok: true as const, value: [{ path: '/ws/a.ts', relative: 'a.ts', kind: 'file' }] }))
-      const booted = await boot({ atFileSearch, openPath: async () => ({ result: { ok: false, error: { message: 'nope' } } }) })
+      const booted = await boot({ atFileSearch, openPath: async () => ({ ok: false, error: { message: 'nope' } }) })
       await registered(booted).candidates(s1, { query: 'a', position: 'inline', signal: signal() })
       registeredDock(booted).inject(s1.sessionId).onOpen('a.ts')
       await Promise.resolve()
@@ -537,8 +537,11 @@ describe('dsh-at-file client apply', () => {
     const unmount = vi.fn(async () => {})
     const registerDispose = vi.fn()
     ctx.provide('inputTriggers', { registerSource: vi.fn(() => registerDispose) })
-    ctx.provide('connection', { api: { host: { openPath: async () => ({ result: { ok: true as const } }) } } })
-    ctx.provide('remote', { $mount: vi.fn(async () => unmount) })
+    ctx.provide('connection', {})
+    ctx.provide('remote', {
+      $mount: vi.fn(async () => unmount),
+      session: { openWorkspacePath: async () => ({ ok: true as const, value: { opened: true as const } }) },
+    })
     ctx.provide('remote.atFile', {
       search: async () => ({ ok: true as const, value: [] }),
       getSettings: async () => ({

@@ -1,3 +1,6 @@
+- id: ui-reference
+  disabled: true
+
 - insert:
     - id: dsh-at-file
       name: dsh-at-file

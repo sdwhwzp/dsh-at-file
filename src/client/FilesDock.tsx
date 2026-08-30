@@ -9,7 +9,7 @@
  */
 import { useMemo } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
 import type { AtFileSettings } from '../contract.ts'
 import { isProtectedMentionToken } from '../paste.ts'
 

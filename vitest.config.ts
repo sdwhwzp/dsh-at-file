@@ -47,9 +47,8 @@ export default defineConfig({
     alias: {
       // The published /client bundles are browser module-loader format and
       // crash under Node; tests resolve the same entries to their sources.
-      '@deepseek-ai/dsh-client-runtime/client': dsh('packages/client/runtime/src/client/index.ts'),
+      '@deepseek-ai/dsh-client-store': dsh('packages/client/store/src/index.ts'),
       '@deepseek-ai/dsh-client-ui-input-trigger/client': dsh('packages/client/ui-input-trigger/src/client/index.ts'),
-      '@deepseek-ai/dsh-client-connection/client': dsh('packages/client/connection/src/client/index.ts'),
     },
   },
   test: {

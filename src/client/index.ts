@@ -8,16 +8,15 @@
  */
 // Type-only: the ctx.remote merge and the forwarded Host-event face.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
-import type { ConnectionHandle, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
-import {
-  createSnapshotStore,
-  type ClientContext,
-  type ISessions,
-  type SnapshotStore,
-} from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { InputTriggerServiceContract } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 // Type-only: the conversation SlotMap / standard-kit merges for the dock seat.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+// Type-only: the renderer owns the client slot service on the alpha.1 cohort.
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: the ctx.locale Context merge.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: brings the settings.section SlotMap declaration into this program.
@@ -142,7 +141,6 @@ export function apply(ctx: ClientContext): void {
     }
   }, 'dsh-at-file: remote')
 
-  const connection = ctx.get('connection') as ConnectionHandle
   const inputTriggers = ctx.get('inputTriggers') as InputTriggerServiceContract
   const sessions = ctx.get('sessions') as unknown as ISessions
   const t = ctx.locale.bind(NS)
@@ -216,16 +214,9 @@ export function apply(ctx: ClientContext): void {
     }
   }, 'dsh-at-file: source (settings-gated)')
 
-  // The wire face of host.openPath (typed structurally: the connection
-  // handle's IApiClient type lives behind the apiproxy package this plugin
-  // does not import).
-  interface OpenPathResponse {
-    result: { ok: true } | { ok: false; error: { message: string } }
-  }
-
-  const openPath = (path: string): void => {
-    void connection.api.host.openPath({ path }).then((response: OpenPathResponse) => {
-      if (!response.result.ok) console.error('[dsh-at-file] open failed:', response.result.error.message)
+  const openPath = (sessionId: SessionId, path: string): void => {
+    void ctx.remote.session.openWorkspacePath({ sessionId, path }).then((result) => {
+      if (!result.ok) console.error('[dsh-at-file] open failed:', result.error.message)
     }, (error: unknown) => {
       console.error('[dsh-at-file] open failed:', error)
     })
@@ -237,7 +228,7 @@ export function apply(ctx: ClientContext): void {
       console.error('[dsh-at-file] open failed: no index entry for', relative)
       return
     }
-    openPath(entry.path)
+    openPath(sessionId, entry.path)
   }
 
   ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({

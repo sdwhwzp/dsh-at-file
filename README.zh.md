@@ -5,6 +5,8 @@
 
 DeepSeek Harness Web 界面的工作区路径引用插件。在输入框输入 `@`，可以搜索当前工作区并插入文件或目录路径。
 
+安装本 bundle 后会禁用 Harness 的 `ui-reference` 浏览器条目。因此，`@` 菜单只显示当前会话工作区内的文件和目录，不会查询或显示任何 Session 引用。
+
 ![@ 路径选择器](assets/screenshots/workspace-path-picker.png)
 
 ![输入框中的文件引用](assets/screenshots/file-mention-composer.png)
@@ -91,7 +93,7 @@ dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/re
 
 ## 路径处理
 
-- 选择器索引当前工作区中的常规文件、目录和符号链接。目录链接会通过其工作区内的相对别名继续遍历；若链接指回上级目录，则保留该链接但不再进入，以避免循环。
+- 选择器索引当前工作区中的常规文件、目录，以及规范目标仍在该工作区内的符号链接。目录链接会通过其工作区内的相对别名继续遍历；若链接指回上级目录，则保留该链接但不再进入，以避免循环。指向工作区外部的链接不会显示。
 - Host 遍历工作区时会合并全局和当前工作区的文件名规则。被过滤的条目不会占用 `maxIndexedFiles`，也不会发送到浏览器。
 - Host 接受工作区相对路径。绝对路径以及越出工作区的路径会被忽略。
 - 手动输入的文本和选择器中的选择可以生成引用消息。默认设置开启时，粘贴文本中的 `@` 会被忽略。
@@ -113,6 +115,8 @@ pnpm run build
 ```
 
 开发环境默认官方 `deepseek-ai/deepseek-harness` 仓库位于 `../deepseek-harness`，与该仓库的默认克隆目录一致。`lib/` 中的构建产物会提交到仓库，因此 profile 安装过程无需运行包构建脚本。
+
+部署环境通过本地 `link:` 安装本插件时，启动 DSH 前运行 `node scripts/link-runtime-peers.mjs`。脚本依次使用 `DSH_RUNTIME_NODE_MODULES`、`~/apps/dsh-runtime/current/node_modules` 或相邻的 Harness 源码，并在找不到版本匹配的 Host 包时明确失败。
 
 ## License
 

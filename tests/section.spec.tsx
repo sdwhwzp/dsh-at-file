@@ -39,7 +39,6 @@ function props(over: {
   workspaceIgnoreFiles?: readonly WorkspaceIgnoreFiles[]
   workspaces?: readonly WorkspaceStub[]
   currentCwd?: string
-  recentWorkspaceId?: string
   setEnabled?: (enabled: boolean) => Promise<void>
   setIgnorePastedMentions?: (ignore: boolean) => Promise<void>
   setIgnoreFiles?: (ignoreFiles: readonly FileIgnoreRuleInput[]) => Promise<void>
@@ -66,8 +65,7 @@ function props(over: {
     useSessions: <T,>(selector: (snapshot: typeof sessionState) => T): T => selector(sessionState),
     useWorkspaces: <T,>(selector: (snapshot: {
       items: readonly WorkspaceStub[]
-      recentWorkspaceId?: string
-    }) => T): T => selector({ items, recentWorkspaceId: over.recentWorkspaceId }),
+    }) => T): T => selector({ items }),
     viewState: over.viewState ?? { filterScope: 'global', selectedWorkspace: '' },
     setEnabled: over.setEnabled ?? (async () => {}),
     setIgnorePastedMentions: over.setIgnorePastedMentions ?? (async () => {}),

@@ -11,7 +11,7 @@ src/mention.ts      Host pre-step path marker (scan @path, validate existence, i
 src/contract.ts     one shared descriptor set + zod codecs + FileEntry/settings types
 src/typert.ts       strict host Typert manifest, registered via ctx.typert.register
 src/settings.ts     the `at-file` settings namespace (enable switch and scoped file filters)
-src/files.ts        bounded workspace path index walk over node:fs
+src/files.ts        bounded workspace path index walk over node:fs; symlink targets stay inside the workspace
 src/defaults.ts     built-in ignored directory names for IDE metadata, caches, dependencies, and build output
 src/invariant.ts    ./invariant companion (real `No runtime invariant:` reason)
 src/client/         browser half, served as the single file /plugins/dsh-at-file/client.js
@@ -24,6 +24,7 @@ src/client/         browser half, served as the single file /plugins/dsh-at-file
   FilesDock.tsx     input.dock rows parsed from the draft's @path tokens (open/remove)
   SettingsSection.tsx  native enable checkbox plus Global/Workspace Exact/Regex filter manager
 tests/              node-env specs; jsdom pragma on the browser specs
+scripts/link-runtime-peers.mjs  profile-link peer materialization for packaged DSH runtimes
 ```
 
 ## Contracts with the harness (do not drift)
