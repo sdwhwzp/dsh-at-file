@@ -39,6 +39,8 @@ export interface AtFileSettings {
   readonly enabled: boolean
   /** Global Exact and Regex basename filters; legacy strings are insensitive Exact rules. */
   readonly ignoreFiles: FileIgnoreRuleInput[]
+  /** Whether an empty global filter list was explicitly saved by a current client. */
+  readonly ignoreFilesConfigured?: boolean
   /** Workspace-specific filters added to the global filters. */
   readonly workspaceIgnoreFiles: WorkspaceIgnoreFiles[]
   /** Whether @ tokens inserted through paste stay ordinary text. */
@@ -91,6 +93,7 @@ export const workspaceIgnoreFilesSchema = z.object({
 export const atFileSettingsSchema = z.object({
   enabled: z.boolean(),
   ignoreFiles: z.array(fileIgnoreRuleInputSchema),
+  ignoreFilesConfigured: z.boolean().default(false),
   workspaceIgnoreFiles: z.array(workspaceIgnoreFilesSchema),
   ignorePastedMentions: z.boolean().default(true),
 }).readonly()

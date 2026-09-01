@@ -8,6 +8,7 @@ import {
   normalizeIgnoreFiles,
   normalizeIgnoreRule,
   normalizeWorkspaceIgnoreFiles,
+  resolvedGlobalIgnoreFiles,
   workspaceIgnoreFilesFor,
   workspacePathKey,
 } from '../src/defaults.ts'
@@ -88,6 +89,16 @@ describe('workspace file filters', () => {
     }), '/work/one')).toEqual(['global.tmp', 'shared.tmp', 'local.tmp'])
     const legacy = { enabled: true, ignoreFiles: ['legacy.tmp'] } as AtFileSettings
     expect(effectiveIgnoreFiles(legacy, '/work/one')).toEqual(['legacy.tmp'])
+  })
+
+  it('migrates a legacy empty list to defaults without overriding an explicit clear', () => {
+    const legacy = settings({ ignoreFiles: [] })
+    const explicitlyCleared = settings({ ignoreFiles: [], ignoreFilesConfigured: true })
+    expect(resolvedGlobalIgnoreFiles(legacy)).toEqual(['desktop.ini', 'Thumbs.db', '.DS_Store'])
+    expect(effectiveIgnoreFiles(legacy, '/work')).toEqual(['desktop.ini', 'Thumbs.db', '.DS_Store'])
+    expect(resolvedGlobalIgnoreFiles(explicitlyCleared)).toEqual([])
+    expect(effectiveIgnoreFiles(explicitlyCleared, '/work')).toEqual([])
+    expect(ignoreFilesSettingsKey(legacy)).not.toBe(ignoreFilesSettingsKey(explicitlyCleared))
   })
 
   it('builds an order-independent cache key covering every scope', () => {

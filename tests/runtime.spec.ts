@@ -67,12 +67,14 @@ describe('dsh-at-file host composition', () => {
     expect(AtFileSettingsSchema({ enabled: true, ignoreFiles: ['desktop.ini'] })).toEqual({
       enabled: true,
       ignoreFiles: ['desktop.ini'],
+      ignoreFilesConfigured: false,
       workspaceIgnoreFiles: [],
       ignorePastedMentions: true,
     })
     expect(AtFileSettingsSchema({
       enabled: true,
       ignoreFiles: [{ kind: 'regex', pattern: '\\.map$', caseSensitive: false }],
+      ignoreFilesConfigured: false,
       workspaceIgnoreFiles: [{
         workspace: '/work',
         ignoreFiles: [{ kind: 'exact', pattern: 'Case.tmp', caseSensitive: true }],
@@ -80,6 +82,7 @@ describe('dsh-at-file host composition', () => {
     })).toEqual({
       enabled: true,
       ignoreFiles: [{ kind: 'regex', pattern: '\\.map$', caseSensitive: false }],
+      ignoreFilesConfigured: false,
       workspaceIgnoreFiles: [{
         workspace: '/work',
         ignoreFiles: [{ kind: 'exact', pattern: 'Case.tmp', caseSensitive: true }],
@@ -142,7 +145,7 @@ describe('dsh-at-file host composition', () => {
       expect(await runtime.updateSettings({
         field: 'ignoreFiles',
         value: [' noise.log ', 'NOISE.LOG', ''],
-      })).toMatchObject({ ignoreFiles: ['noise.log'] })
+      })).toMatchObject({ ignoreFiles: ['noise.log'], ignoreFilesConfigured: true })
       expect(await runtime.updateSettings({
         field: 'workspaceIgnoreFiles',
         value: [
@@ -230,7 +233,12 @@ describe('dsh-at-file host composition', () => {
     await writeFile(join(root, 'keep.txt'), 'keep\n')
     let ignoreFiles: string[] = ['DESKTOP.INI']
     const ctx = new Context()
-    const fiber = await mount(ctx, undefined, () => ({ enabled: true, ignoreFiles, workspaceIgnoreFiles: [] }))
+    const fiber = await mount(ctx, undefined, () => ({
+      enabled: true,
+      ignoreFiles,
+      ignoreFilesConfigured: true,
+      workspaceIgnoreFiles: [],
+    }))
     try {
       const runtime = ctx.get('atFile') as AtFileRuntime
       expect((await runtime.search(agentWith(root), new AbortController().signal)).map(file => file.relative)).toEqual(['keep.txt'])

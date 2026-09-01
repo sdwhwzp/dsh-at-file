@@ -5,7 +5,7 @@
  * browser bundle and the host manifest stay on one wire definition.
  */
 import type { RemoteResult, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
-import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
 import { AT_FILE_INVOCATIONS } from '../contract.ts'
 import type { AtFileSettings, AtFileSettingsUpdate } from '../contract.ts'
 

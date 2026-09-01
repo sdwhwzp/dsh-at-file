@@ -9,6 +9,7 @@ import {
   ignoreRuleKey,
   normalizeIgnoreFiles,
   normalizeIgnoreRule,
+  resolvedGlobalIgnoreFiles,
   workspaceIgnoreFilesFor,
   workspacePathKey,
 } from '../defaults.ts'
@@ -110,10 +111,14 @@ export function AtFileSection({
   const settings = useScope(snapshot => snapshot.value)
   const enabled = settings?.enabled ?? true
   const ignorePastedMentions = settings?.ignorePastedMentions ?? true
-  const globalFiles = normalizeIgnoreFiles(settings?.ignoreFiles ?? DEFAULT_IGNORE_FILES)
+  const globalFiles = normalizeIgnoreFiles(settings === undefined
+    ? DEFAULT_IGNORE_FILES
+    : resolvedGlobalIgnoreFiles(settings))
   const workspaceRules = settings?.workspaceIgnoreFiles ?? []
   const workspaces = useWorkspaces(snapshot => snapshot.items)
-  const recentWorkspaceId = useWorkspaces(snapshot => snapshot.recentWorkspaceId)
+  const recentWorkspaceId = useWorkspaces(snapshot => (
+    snapshot as typeof snapshot & { readonly recentWorkspaceId?: string }
+  ).recentWorkspaceId)
   const currentCwd = useSessions(snapshot => {
     const current = snapshot.current
     return current === undefined ? undefined : snapshot.byId[current]?.cwd

@@ -48,10 +48,12 @@ DeepSeek Harness Web 界面的工作区路径引用插件。在输入框输入 `
 ## 安装或更新
 
 ```sh
-dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.6.9.tar.gz
+dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.7.0.tar.gz
 ```
 
-已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.6.9`。
+已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.7.0`。
+
+`0.7.0` 同时兼容 Harness 0.1.1 与 0.1.2 的客户端包结构；它也会为曾经保存过空旧配置的安装恢复默认文件忽略项。在 0.7.0 中再次清空列表仍会被视为用户的明确选择。
 
 ## 文件过滤
 

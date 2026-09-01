@@ -76,9 +76,17 @@ export function defaultAtFileSettings(): AtFileSettings {
   return {
     enabled: true,
     ignoreFiles: [...DEFAULT_IGNORE_FILES],
+    ignoreFilesConfigured: false,
     workspaceIgnoreFiles: [],
     ignorePastedMentions: true,
   }
+}
+
+/** Resolve legacy empty lists to defaults while preserving a newly explicit clear. */
+export function resolvedGlobalIgnoreFiles(settings: AtFileSettings): readonly FileIgnoreRuleInput[] {
+  return settings.ignoreFiles.length === 0 && settings.ignoreFilesConfigured !== true
+    ? DEFAULT_IGNORE_FILES
+    : settings.ignoreFiles
 }
 
 /** Trim rules and remove empty entries or duplicates with identical matching semantics. */
@@ -185,14 +193,14 @@ export function workspaceIgnoreFilesFor(
 /** Effective file-name filters for one workspace: global rules plus local additions. */
 export function effectiveIgnoreFiles(settings: AtFileSettings, workspace: string): FileIgnoreRuleInput[] {
   return normalizeIgnoreFiles([
-    ...settings.ignoreFiles,
+    ...resolvedGlobalIgnoreFiles(settings),
     ...workspaceIgnoreFilesFor(settings.workspaceIgnoreFiles ?? [], workspace),
   ])
 }
 
 /** Stable cache key covering every file-name filter setting. */
 export function ignoreFilesSettingsKey(settings: AtFileSettings): string {
-  const global = normalizeIgnoreFiles(settings.ignoreFiles).map(ignoreRuleKey).sort()
+  const global = normalizeIgnoreFiles(resolvedGlobalIgnoreFiles(settings)).map(ignoreRuleKey).sort()
   const workspaces = normalizeWorkspaceIgnoreFiles(settings.workspaceIgnoreFiles ?? [])
     .map(entry => ({
       workspace: workspacePathKey(entry.workspace),

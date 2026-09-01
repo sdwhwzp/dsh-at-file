@@ -1,7 +1,7 @@
 {
   "name": "dsh-at-file",
   "description": "Codex-style @path references for the DeepSeek Harness web GUI: search workspace paths without injecting file content",
-  "version": "0.6.9",
+  "version": "0.7.0",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
@@ -27,7 +27,6 @@
     "client": {
       "platform": "web",
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
         "@deepseek-ai/dsh-client-ui-input-trigger",
         "@deepseek-ai/dsh-client-ui-slots",
         "@deepseek-ai/dsh-client-locale"
@@ -53,6 +52,7 @@
     "@deepseek-ai/dsh-agent": "*",
     "@deepseek-ai/dsh-typert-protocol": "*",
     "@deepseek-ai/dsh-client-runtime": "*",
+    "@deepseek-ai/dsh-client-store": "*",
     "@deepseek-ai/dsh-api-remotes": "*",
     "@deepseek-ai/dsh-client-ui-input-trigger": "*",
     "@deepseek-ai/dsh-client-ui-slots": "*",
@@ -76,6 +76,9 @@
       "optional": true
     },
     "@deepseek-ai/dsh-client-runtime": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-client-store": {
       "optional": true
     },
     "@deepseek-ai/dsh-api-remotes": {
@@ -121,7 +124,7 @@
     "@deepseek-ai/dsh-typert-protocol": "link:../deepseek-harness/packages/typert/protocol",
     "@deepseek-ai/dsh-invariants": "link:../deepseek-harness/packages/runtime-diagnostics/invariants",
     "@deepseek-ai/schemastery": "link:../deepseek-harness/vendor/schemastery",
-    "@deepseek-ai/dsh-client-runtime": "link:../deepseek-harness/packages/client/runtime",
+    "@deepseek-ai/dsh-client-store": "link:../deepseek-harness/packages/client/store",
     "@deepseek-ai/dsh-api-remotes": "link:../deepseek-harness/packages/api/remotes",
     "@deepseek-ai/dsh-client-ui-input-trigger": "link:../deepseek-harness/packages/client/ui-input-trigger",
     "@deepseek-ai/dsh-client-ui-slots": "link:../deepseek-harness/packages/client/ui-slots",

@@ -34,6 +34,8 @@ export interface AtFileSettings {
     readonly enabled: boolean;
     /** Global Exact and Regex basename filters; legacy strings are insensitive Exact rules. */
     readonly ignoreFiles: FileIgnoreRuleInput[];
+    /** Whether an empty global filter list was explicitly saved by a current client. */
+    readonly ignoreFilesConfigured?: boolean;
     /** Workspace-specific filters added to the global filters. */
     readonly workspaceIgnoreFiles: WorkspaceIgnoreFiles[];
     /** Whether @ tokens inserted through paste stay ordinary text. */
@@ -105,6 +107,7 @@ export declare const atFileSettingsSchema: z.ZodReadonly<z.ZodObject<{
         pattern: z.ZodString;
         caseSensitive: z.ZodBoolean;
     }, z.core.$strip>>]>>;
+    ignoreFilesConfigured: z.ZodDefault<z.ZodBoolean>;
     workspaceIgnoreFiles: z.ZodArray<z.ZodReadonly<z.ZodObject<{
         workspace: z.ZodString;
         ignoreFiles: z.ZodArray<z.ZodUnion<readonly [z.ZodString, z.ZodReadonly<z.ZodObject<{

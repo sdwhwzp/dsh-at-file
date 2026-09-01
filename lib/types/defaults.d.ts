@@ -5,6 +5,8 @@ export declare const DEFAULT_IGNORE_DIRS: readonly [".git", ".hg", ".svn", ".ide
 export declare const DEFAULT_IGNORE_FILES: readonly ["desktop.ini", "Thumbs.db", ".DS_Store"];
 /** Fresh settings defaults for Host and browser initialization. */
 export declare function defaultAtFileSettings(): AtFileSettings;
+/** Resolve legacy empty lists to defaults while preserving a newly explicit clear. */
+export declare function resolvedGlobalIgnoreFiles(settings: AtFileSettings): readonly FileIgnoreRuleInput[];
 /** Trim rules and remove empty entries or duplicates with identical matching semantics. */
 export declare function normalizeIgnoreFiles(values: readonly FileIgnoreRuleInput[]): FileIgnoreRuleInput[];
 /** Convert one legacy or structured setting value into its canonical rule. */
