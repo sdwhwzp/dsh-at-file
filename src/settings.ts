@@ -6,13 +6,13 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { settingsNamespace, type SettingsScope } from '@deepseek-ai/dsh-settings'
+import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import type { AtFileSettings } from './contract.ts'
 import type { FileIgnoreRule } from './contract.ts'
 import { DEFAULT_IGNORE_FILES } from './defaults.ts'
 
-/** The branded namespace name (the Web allowlist must list the same string). */
-export const AT_FILE_NAMESPACE = settingsNamespace('at-file')
+/** The namespace name (the Web allowlist must list the same string). */
+export const AT_FILE_NAMESPACE = 'at-file'
 
 /** Schemastery schema of the `at-file` namespace section. */
 export const AtFileSettingsSchema: z<AtFileSettings> = z.object({

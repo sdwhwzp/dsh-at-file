@@ -14,4 +14,15 @@ describe('profile bundle', () => {
     expect(disableAt).toBeGreaterThanOrEqual(0)
     expect(insertAt).toBeGreaterThan(disableAt)
   })
+
+  it('targets the Alpha.3 client platform without the removed client runtime', async () => {
+    const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')) as {
+      dsh?: { client?: { inject?: string[] } }
+    }
+    const clientSource = await readFile(new URL('../src/client/index.ts', import.meta.url), 'utf8')
+
+    expect(manifest.dsh?.client?.inject).toContain('@deepseek-ai/dsh-client-store')
+    expect(JSON.stringify(manifest)).not.toContain('@deepseek-ai/dsh-client-runtime')
+    expect(clientSource).not.toContain('@deepseek-ai/dsh-client-runtime')
+  })
 })

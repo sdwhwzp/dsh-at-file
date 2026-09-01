@@ -97,7 +97,7 @@ Omitting `ignoreDirs` keeps the built-in list. When you provide it, include ever
 - Global and workspace file-name filters are combined during the Host index walk, before entries count toward `maxIndexedFiles` or reach the browser.
 - The Host accepts workspace-relative paths. Absolute paths and paths that escape the workspace are ignored.
 - Reference markers are created from typed text and picker selections. Pasted `@` tokens are ignored when the default setting is enabled.
-- Clicking a referenced path uses the Harness `host.openPath` endpoint.
+- Clicking a referenced path uses the Harness `session.openWorkspacePath` Remote method.
 - The picker index is cached per session for 30 seconds.
 - The reference dock only renders tokens that exist in the current session's settled workspace index. Unknown `@text` remains ordinary text.
 - An `@path` token cannot contain whitespace or another `@` character.
@@ -114,7 +114,7 @@ pnpm run test
 pnpm run build
 ```
 
-The development setup expects the official `deepseek-ai/deepseek-harness` repository at `../deepseek-harness`, its default clone directory. Built files under `lib/` are committed so profile installation does not require package build scripts.
+The development setup expects DeepSeek Harness `0.1.2-alpha.3` or later at `../deepseek-harness`, its default clone directory. The browser bundle uses the Alpha.3 `dsh-client-store` platform module, and the settings owner passes the literal `at-file` namespace to the Alpha.3 settings service. Built files under `lib/` are committed so profile installation does not require package build scripts.
 
 When a deployment installs this package through a local `link:`, run `node scripts/link-runtime-peers.mjs` before starting DSH. The script uses `DSH_RUNTIME_NODE_MODULES`, `~/apps/dsh-runtime/current/node_modules`, or an adjacent Harness checkout and fails if the matching Host packages cannot be found.
 
