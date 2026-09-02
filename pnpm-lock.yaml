@@ -21,9 +21,9 @@ importers:
       '@deepseek-ai/dsh-api-remotes':
         specifier: link:../deepseek-harness/packages/api/remotes
         version: link:../deepseek-harness/packages/api/remotes
-      '@deepseek-ai/dsh-api-session-controller':
-        specifier: link:../deepseek-harness/packages/api/session-controller
-        version: link:../deepseek-harness/packages/api/session-controller
+      '@deepseek-ai/dsh-client-connection':
+        specifier: link:../deepseek-harness/packages/client/connection
+        version: link:../deepseek-harness/packages/client/connection
       '@deepseek-ai/dsh-client-locale':
         specifier: link:../deepseek-harness/packages/client/locale
         version: link:../deepseek-harness/packages/client/locale
@@ -36,9 +36,6 @@ importers:
       '@deepseek-ai/dsh-client-ui-input-trigger':
         specifier: link:../deepseek-harness/packages/client/ui-input-trigger
         version: link:../deepseek-harness/packages/client/ui-input-trigger
-      '@deepseek-ai/dsh-client-ui-renderer':
-        specifier: link:../deepseek-harness/packages/client/ui-renderer
-        version: link:../deepseek-harness/packages/client/ui-renderer
       '@deepseek-ai/dsh-client-ui-settings':
         specifier: link:../deepseek-harness/packages/client/ui-settings
         version: link:../deepseek-harness/packages/client/ui-settings
