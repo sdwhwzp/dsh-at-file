@@ -2,7 +2,7 @@
  * Host @path reference behavior: token recognition, workspace confinement,
  * existence/kind markers, and the unknown-path/non-user-source skips.
  */
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, symlink, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -136,6 +136,23 @@ describe('expandMentions', () => {
       expect(await expandMentions([user('read @src/../../secret.ts')], root, new AbortController().signal)).toEqual([])
     } finally {
       await rm(root, { recursive: true, force: true })
+    }
+  })
+
+  it('refuses symbolic links that resolve outside the workspace', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'dsh-at-file-mention-root-'))
+    const external = await mkdtemp(join(tmpdir(), 'dsh-at-file-mention-external-'))
+    await writeFile(join(external, 'secret.txt'), 'secret\n')
+    await symlink(external, join(root, 'outside'), 'dir')
+    try {
+      expect(await expandMentions(
+        [user('read @outside/secret.txt')],
+        root,
+        new AbortController().signal,
+      )).toEqual([])
+    } finally {
+      await rm(root, { recursive: true, force: true })
+      await rm(external, { recursive: true, force: true })
     }
   })
 

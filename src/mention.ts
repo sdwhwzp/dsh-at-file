@@ -7,7 +7,7 @@
  * text cannot forge the gesture.
  */
 import { isAbsolute, relative as pathRelative, resolve, sep } from 'node:path'
-import { stat } from 'node:fs/promises'
+import { realpath, stat } from 'node:fs/promises'
 import type { UserMessage } from '@deepseek-ai/dsh-llm'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { PreStepDecision } from '@deepseek-ai/dsh-agent'
@@ -73,7 +73,19 @@ async function resolveMention(
     return undefined
   }
   signal.throwIfAborted()
-  const info = await stat(absolute).catch(() => undefined)
+  const [canonicalRoot, canonicalTarget] = await Promise.all([
+    realpath(cwd).catch(() => undefined),
+    realpath(absolute).catch(() => undefined),
+  ])
+  signal.throwIfAborted()
+  if (canonicalRoot === undefined || canonicalTarget === undefined) return undefined
+  const canonicalRelative = pathRelative(canonicalRoot, canonicalTarget)
+  if (
+    canonicalRelative === '..' ||
+    canonicalRelative.startsWith(`..${sep}`) ||
+    isAbsolute(canonicalRelative)
+  ) return undefined
+  const info = await stat(canonicalTarget).catch(() => undefined)
   signal.throwIfAborted()
   if (info === undefined) return undefined
   const relative = confined.split(sep).join('/') || '.'

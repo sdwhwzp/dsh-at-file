@@ -66,7 +66,7 @@ describe('indexWorkspace', () => {
     }
   })
 
-  it('indexes file and external directory links while applying ignore rules', async () => {
+  it('refuses symbolic links that leave the workspace', async () => {
     const root = await mkdtemp(join(tmpdir(), 'dsh-at-file-link-root-'))
     const external = await mkdtemp(join(tmpdir(), 'dsh-at-file-link-target-'))
     try {
@@ -82,11 +82,7 @@ describe('indexWorkspace', () => {
         ignoreDirs: ['ignored-docs'],
         ignoreFiles: ['secret.log'],
       })
-      expect(files.map(file => `${file.kind}:${file.relative}`)).toEqual([
-        'dir:docs',
-        'file:docs/guide.md',
-        'file:guide-link.md',
-      ])
+      expect(files).toEqual([])
     } finally {
       await rm(root, { recursive: true, force: true })
       await rm(external, { recursive: true, force: true })

@@ -7,7 +7,7 @@
  */
 import { opendir, realpath, stat } from 'node:fs/promises'
 import type { Dir, Dirent } from 'node:fs'
-import { join, relative, sep } from 'node:path'
+import { isAbsolute, join, relative, sep } from 'node:path'
 import type { FileEntry, FileIgnoreRuleInput } from './contract.ts'
 import { compileIgnoreRules } from './defaults.ts'
 
@@ -84,6 +84,12 @@ function messageOf(error: unknown): string {
 /** Forward-slash display path of `child` relative to `root` (stable across platforms). */
 function displayRelative(root: string, child: string): string {
   return relative(root, child).split(sep).join('/')
+}
+
+/** Whether one canonical target remains inside the canonical workspace root. */
+function isInsideWorkspace(root: string, target: string): boolean {
+  const candidate = relative(root, target)
+  return candidate !== '..' && !candidate.startsWith(`..${sep}`) && !isAbsolute(candidate)
 }
 
 /** Close a departed caller's abandoned directory handle without awaiting a queued read. */
@@ -181,6 +187,7 @@ export async function indexWorkspace(
             // rest of the workspace index.
             continue
           }
+          if (!isInsideWorkspace(rootCanonical, targetPath)) continue
           if (target.isDirectory()) {
             if (ignoreDirs.has(dirent.name)) continue
             files.push({ path: child, relative: displayRelative(root, child), kind: 'dir' })
