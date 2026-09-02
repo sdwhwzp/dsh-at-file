@@ -53,9 +53,9 @@ DeepSeek Harness Web 界面的工作区路径引用插件。在输入框输入 `
 dsh plugin --profile web add https://github.com/sdwhwzp/dsh-at-file/archive/refs/heads/dev.tar.gz
 ```
 
-已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.7.1`。
+已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.7.2`。
 
-`0.7.1` 面向 Harness Alpha.4，保留工作区专属的 `@` 文件选择，并为曾经保存过空旧配置的安装恢复默认文件忽略项。再次清空列表仍会被视为用户的明确选择。
+`0.7.2` 面向 Harness Alpha.4，并把 Harness 包的 peer 依赖起始版本明确为 `0.1.2-alpha.4`。客户端状态依赖声明为 `dsh-client-store`；bundle 中的兼容回退不要求单独安装 `dsh-client-runtime`。
 
 ## 文件过滤
 
@@ -116,7 +116,7 @@ pnpm run test
 pnpm run build
 ```
 
-开发环境要求 `../deepseek-harness` 为 DeepSeek Harness `0.1.2-alpha.3` 或更高版本，与该仓库的默认克隆目录一致。浏览器 bundle 使用 Alpha.3 的 `dsh-client-store` 平台模块，设置所有者把字面量 `at-file` 命名空间交给 Alpha.3 settings 服务。`lib/` 中的构建产物会提交到仓库，因此 profile 安装过程无需运行包构建脚本。
+开发环境要求 `../deepseek-harness` 为 DeepSeek Harness `0.1.2-alpha.4` 或更高版本，与该仓库的默认克隆目录一致。浏览器 bundle 使用拆分后的 `dsh-client-store` 平台模块，设置所有者把字面量 `at-file` 命名空间交给 settings 服务。`lib/` 中的构建产物会提交到仓库，因此 profile 安装过程无需运行包构建脚本。
 
 部署环境通过本地 `link:` 安装本插件时，启动 DSH 前运行 `node scripts/link-runtime-peers.mjs`。脚本依次使用 `DSH_RUNTIME_NODE_MODULES`、`~/apps/dsh-runtime/current/node_modules` 或相邻的 Harness 源码，并在找不到版本匹配的 Host 包时明确失败。
 
