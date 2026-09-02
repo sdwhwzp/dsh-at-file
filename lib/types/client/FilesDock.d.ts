@@ -1,5 +1,5 @@
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
-import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store';
+import type { ObservableSnapshot } from './store.ts';
 import type { AtFileSettings } from '../contract.ts';
 export interface AtFileSettingsSnapshot {
     readonly value: AtFileSettings;

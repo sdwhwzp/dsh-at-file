@@ -71,7 +71,13 @@ describe('AT_FILE_REMOTE', () => {
   it('settings codecs reject incomplete resolved sections', () => {
     const schema = AT_FILE_REMOTE.descriptors[1]!.result.schema as { parse(value: unknown): unknown }
     expect(schema.parse({ enabled: true, ignoreFiles: [], workspaceIgnoreFiles: [] }))
-      .toEqual({ enabled: true, ignoreFiles: [], workspaceIgnoreFiles: [], ignorePastedMentions: true })
+      .toEqual({
+        enabled: true,
+        ignoreFiles: [],
+        ignoreFilesConfigured: false,
+        workspaceIgnoreFiles: [],
+        ignorePastedMentions: true,
+      })
     expect(() => schema.parse({ enabled: true, ignoreFiles: [] })).toThrow()
   })
 })

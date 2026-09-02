@@ -15,14 +15,16 @@ describe('profile bundle', () => {
     expect(insertAt).toBeGreaterThan(disableAt)
   })
 
-  it('targets the Alpha.3 client platform without the removed client runtime', async () => {
+  it('targets Alpha.4 while retaining the upstream client-layout fallback', async () => {
     const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')) as {
-      dsh?: { client?: { inject?: string[] } }
+      dsh?: { engines?: { dsh?: string } }
+      peerDependencies?: Record<string, string>
     }
     const clientSource = await readFile(new URL('../src/client/index.ts', import.meta.url), 'utf8')
 
-    expect(manifest.dsh?.client?.inject).toContain('@deepseek-ai/dsh-client-store')
-    expect(JSON.stringify(manifest)).not.toContain('@deepseek-ai/dsh-client-runtime')
+    expect(manifest.dsh?.engines?.dsh).toBe('>=0.1.2-alpha.4 <0.2.0')
+    expect(manifest.peerDependencies).toHaveProperty('@deepseek-ai/dsh-client-store')
+    expect(manifest.peerDependencies).toHaveProperty('@deepseek-ai/dsh-client-runtime')
     expect(clientSource).not.toContain('@deepseek-ai/dsh-client-runtime')
   })
 })

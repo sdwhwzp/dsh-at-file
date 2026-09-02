@@ -68,7 +68,10 @@ export function apply(ctx: Context, config?: Config): void {
     if (update.field === 'enabled') {
       await settings.update({ enabled: update.value })
     } else if (update.field === 'ignoreFiles') {
-      await settings.update({ ignoreFiles: normalizeIgnoreFiles(update.value) })
+      await settings.update({
+        ignoreFiles: normalizeIgnoreFiles(update.value),
+        ignoreFilesConfigured: true,
+      })
     } else if (update.field === 'workspaceIgnoreFiles') {
       await settings.update({
         workspaceIgnoreFiles: normalizeWorkspaceIgnoreFiles(update.value),

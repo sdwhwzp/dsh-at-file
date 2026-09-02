@@ -11,6 +11,8 @@ import type { InputTriggerCandidate, InputTriggerSource } from '@deepseek-ai/dsh
 import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
 import { basenameOf, dirnameOf } from './model.ts'
 import { rankFiles } from './search.ts'
+import { fileIcon } from './icons.tsx'
+import { usesSplitClientStore } from './store.ts'
 import type { FileEntry } from './remote.ts'
 import { PASTED_MENTION_MARKER } from '../paste.ts'
 
@@ -77,9 +79,12 @@ function candidateRows(files: readonly FileEntry[]): readonly AtFileCandidate[] 
       name: duplicate && directory !== '' ? `${basename} - ${directory}` : basename,
       value: file.relative,
       atFileKind: file.kind,
-      // The standing contract types icons as text. React renders this in-memory
-      // element directly; no icon markup crosses the Host boundary.
-      icon: file.kind === 'dir' ? 'folder' : 'file',
+      // 0.1.2 maps stable icon names through ReferenceIcon; 0.1.1 renders the
+      // supplied React element directly. The snapshot-store split is the
+      // package-layout feature boundary shared by those two UI contracts.
+      icon: (usesSplitClientStore
+        ? (file.kind === 'dir' ? 'folder' : 'file')
+        : fileIcon(file)) as unknown as InputTriggerCandidate['icon'],
       ...(directory === '' ? {} : { description: directory }),
     }
   })

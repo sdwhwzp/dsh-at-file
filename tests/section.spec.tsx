@@ -36,6 +36,7 @@ function props(over: {
   enabled?: boolean
   ignorePastedMentions?: boolean
   ignoreFiles?: readonly FileIgnoreRuleInput[]
+  ignoreFilesConfigured?: boolean
   workspaceIgnoreFiles?: readonly WorkspaceIgnoreFiles[]
   workspaces?: readonly WorkspaceStub[]
   currentCwd?: string
@@ -50,6 +51,7 @@ function props(over: {
     : {
         enabled: over.enabled ?? true,
         ignoreFiles: [...over.ignoreFiles ?? DEFAULT_IGNORE_FILES],
+        ignoreFilesConfigured: over.ignoreFilesConfigured ?? true,
         workspaceIgnoreFiles: (over.workspaceIgnoreFiles ?? []).map(entry => ({
           workspace: entry.workspace,
           ignoreFiles: [...entry.ignoreFiles],
@@ -134,6 +136,23 @@ describe('AtFileSection', () => {
     expect(names).toEqual(DEFAULT_IGNORE_FILES)
     expect(container.querySelector('textarea')).toBeNull()
     root.unmount()
+  })
+
+  it('shows defaults for a legacy empty list but preserves a current explicit clear', () => {
+    const legacy = mount(<AtFileSection {...props({
+      ignoreFiles: [],
+      ignoreFilesConfigured: false,
+    })} />)
+    expect([...legacy.container.querySelectorAll('.dsh_atFile_filterName')].map(node => node.textContent))
+      .toEqual(DEFAULT_IGNORE_FILES)
+    legacy.root.unmount()
+
+    const current = mount(<AtFileSection {...props({
+      ignoreFiles: [],
+      ignoreFilesConfigured: true,
+    })} />)
+    expect(current.container.querySelectorAll('.dsh_atFile_filterName')).toHaveLength(0)
+    current.root.unmount()
   })
 
   it('adds and removes individual global rules without serializing a text area', async () => {

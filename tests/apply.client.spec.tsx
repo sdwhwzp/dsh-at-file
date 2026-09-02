@@ -397,7 +397,7 @@ describe('dsh-at-file client apply', () => {
     await registered(booted).candidates(s1, { query: 'a', position: 'inline', signal: signal() })
     expect(dock.inject(s1.sessionId).hooks.index.getSnapshot()).toEqual(['a.ts'])
     dock.inject(s1.sessionId).onOpen('a.ts')
-    expect(booted.openPath).toHaveBeenCalledWith({ sessionId: 's1', path: '/ws/a.ts' })
+    expect(booted.openPath).toHaveBeenCalledWith({ path: '/ws/a.ts' })
   })
 
   it('keeps dock indexes session-scoped and clears them on reconnect', async () => {

@@ -6,10 +6,10 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 import z from '@deepseek-ai/schemastery';
-import type { SettingsScope } from '@deepseek-ai/dsh-settings';
+import type { SettingsNamespace, SettingsScope } from '@deepseek-ai/dsh-settings';
 import type { AtFileSettings } from './contract.ts';
-/** The namespace name (the Web allowlist must list the same string). */
-export declare const AT_FILE_NAMESPACE = "at-file";
+/** The branded namespace name (the Web allowlist must list the same string). */
+export declare const AT_FILE_NAMESPACE: SettingsNamespace;
 /** Schemastery schema of the `at-file` namespace section. */
 export declare const AtFileSettingsSchema: z<AtFileSettings>;
 /**

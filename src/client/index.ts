@@ -9,14 +9,11 @@
 // Type-only: the ctx.remote merge and the forwarded Host-event face.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
-import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { createSnapshotStore, type SnapshotStore } from './store.ts'
 import type { InputTriggerServiceContract } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 // Type-only: the conversation SlotMap / standard-kit merges for the dock seat.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
-// Type-only: the renderer owns the client slot service on the alpha.1 cohort.
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: the ctx.locale Context merge.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: brings the settings.section SlotMap declaration into this program.
@@ -49,6 +46,39 @@ interface AtFileNamespaceFace {
   search(sessionId: SessionId, signal?: AbortSignal): Promise<{ ok: true; value: readonly FileEntry[] } | { ok: false; error: { code: string; message: string; details: object } }>
   getSettings(): Promise<{ ok: true; value: AtFileSettings } | { ok: false; error: { code: string; message: string; details: object } }>
   updateSettings(update: AtFileSettingsUpdate): Promise<{ ok: true; value: AtFileSettings } | { ok: false; error: { code: string; message: string; details: object } }>
+}
+
+/** Session lookup face shared by the 0.1.1 Runtime and 0.1.2 Session Controller. */
+interface SessionsFace {
+  scope(sessionId: SessionId): unknown | undefined
+}
+
+/** Slot registry surface common to the pre- and post-0.1.2 client assemblies. */
+interface SlotsFace {
+  inject(name: string, factory: () => unknown): unknown
+  register(entry: object, component: unknown): unknown
+}
+
+/** 0.1.1's direct Host API, retained as the open-path fallback. */
+interface LegacyConnectionFace {
+  readonly api?: {
+    readonly host?: {
+      openPath(request: { path: string }): Promise<{
+        result: { ok: true } | { ok: false; error: { message: string } }
+      }>
+    }
+  }
+}
+
+/** 0.1.2's generated Session Remote open-path surface. */
+interface SessionOpenPathFace {
+  openWorkspacePath?(request: { path: string }): Promise<{
+    ok: true
+    value: { opened: true }
+  } | {
+    ok: false
+    error: { message: string }
+  }>
 }
 
 /**
@@ -141,8 +171,10 @@ export function apply(ctx: ClientContext): void {
     }
   }, 'dsh-at-file: remote')
 
+  const connection = ctx.get('connection') as LegacyConnectionFace
   const inputTriggers = ctx.get('inputTriggers') as InputTriggerServiceContract
-  const sessions = ctx.get('sessions') as unknown as ISessions
+  const sessions = ctx.get('sessions') as unknown as SessionsFace
+  const slots = (ctx as unknown as { slots: SlotsFace }).slots
   const t = ctx.locale.bind(NS)
 
   const EMPTY_INDEX: readonly string[] = Object.freeze([])
@@ -214,12 +246,22 @@ export function apply(ctx: ClientContext): void {
     }
   }, 'dsh-at-file: source (settings-gated)')
 
-  const openPath = (sessionId: SessionId, path: string): void => {
-    void ctx.remote.session.openWorkspacePath({ sessionId, path }).then((result) => {
-      if (!result.ok) console.error('[dsh-at-file] open failed:', result.error.message)
-    }, (error: unknown) => {
-      console.error('[dsh-at-file] open failed:', error)
-    })
+  const openPath = (path: string): void => {
+    const sessionRemote = (ctx.remote as unknown as { session?: SessionOpenPathFace }).session
+    if (sessionRemote?.openWorkspacePath !== undefined) {
+      void sessionRemote.openWorkspacePath({ path }).then((result) => {
+        if (!result.ok) console.error('[dsh-at-file] open failed:', result.error.message)
+      }, (error: unknown) => { console.error('[dsh-at-file] open failed:', error) })
+      return
+    }
+    const legacyOpen = connection.api?.host?.openPath
+    if (legacyOpen === undefined) {
+      console.error('[dsh-at-file] open failed: no compatible Host open-path service')
+      return
+    }
+    void legacyOpen({ path }).then((response) => {
+      if (!response.result.ok) console.error('[dsh-at-file] open failed:', response.result.error.message)
+    }, (error: unknown) => { console.error('[dsh-at-file] open failed:', error) })
   }
 
   const openRelative = (sessionId: SessionId, relative: string): void => {
@@ -228,32 +270,32 @@ export function apply(ctx: ClientContext): void {
       console.error('[dsh-at-file] open failed: no index entry for', relative)
       return
     }
-    openPath(sessionId, entry.path)
+    openPath(entry.path)
   }
 
-  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({
+  slots.inject('conversation.input.dock', () => slots.register({
     name: 'conversation.input.dock',
     id: 'at-file',
     order: 20,
     locale: NS,
-    inject: (sessionId): AtFileDockInjected => ({
+    inject: (sessionId: SessionId): AtFileDockInjected => ({
       onOpen: relative => { openRelative(sessionId, relative) },
       hooks: { scope, index: indexScopeOf(sessionId) },
     }),
   }, FilesDock))
 
-  ctx.slots.inject('conversation.input.overlay', () => ctx.slots.register({
+  slots.inject('conversation.input.overlay', () => slots.register({
     name: 'conversation.input.overlay',
     id: 'at-file-folder-navigation',
     order: 1,
-    inject: (sessionId): FolderNavigatorInjected => {
+    inject: (sessionId: SessionId): FolderNavigatorInjected => {
       const actx = sessions.scope(sessionId)
       if (actx === undefined) throw new Error(`dsh-at-file: session "${String(sessionId)}" has no client scope`)
-      return { controller: inputTriggers.sessionOf(actx), hooks: { scope } }
+      return { controller: inputTriggers.sessionOf(actx as ClientContext), hooks: { scope } }
     },
   }, FolderNavigator))
 
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
+  slots.inject('settings.section', () => slots.register({
     name: 'settings.section',
     id: 'at-file',
     order: 55,

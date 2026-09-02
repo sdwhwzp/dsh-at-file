@@ -50,10 +50,12 @@ The default index skips common version-control directories, IDE metadata, depend
 ## Install or Update
 
 ```sh
-dsh plugin --profile web add https://github.com/omdsh-dev/dsh-at-file/archive/refs/tags/v0.6.9.tar.gz
+dsh plugin --profile web add https://github.com/sdwhwzp/dsh-at-file/archive/refs/heads/dev.tar.gz
 ```
 
-Use the same command to update an existing installation. Restart `dsh web` after installation so the Host and browser client load version `0.6.9`.
+Use the same command to update an existing installation. Restart `dsh web` after installation so the Host and browser client load version `0.7.1`.
+
+Version `0.7.1` targets Harness Alpha.4, preserves workspace-only `@` choices, and restores default file ignores for installations that persisted an empty legacy list. Clearing the list again remains an explicit choice.
 
 ## File Filters
 

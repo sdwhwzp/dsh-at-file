@@ -9,11 +9,36 @@
  * bundling schemastery (the Loader validates Config against the schema).
  */
 import { build } from 'esbuild'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 
 mkdirSync('lib', { recursive: true })
 
 const dshExternal = ['@deepseek-ai/cordis', '@deepseek-ai/dsh-*']
+
+const clientStoreCompat = {
+  name: 'dsh-client-store-compat',
+  setup(build) {
+    build.onResolve({ filter: /^@deepseek-ai\/dsh-client-store$/ }, (args) => {
+      if (args.namespace === 'dsh-client-store-compat') return { path: args.path, external: true }
+      return { path: 'client-store-fallback', namespace: 'dsh-client-store-compat' }
+    })
+    build.onLoad({ filter: /.*/, namespace: 'dsh-client-store-compat' }, () => ({
+      loader: 'js',
+      contents: `
+        let store
+        let usesSplitClientStore = true
+        try {
+          store = require('@deepseek-ai/dsh-client-store')
+        } catch {
+          usesSplitClientStore = false
+          store = require('@deepseek-ai/dsh-client-runtime/client')
+        }
+        export const createSnapshotStore = store.createSnapshotStore
+        export { usesSplitClientStore }
+      `,
+    }))
+  },
+}
 
 await build({
   entryPoints: ['src/index.ts'],
@@ -49,6 +74,7 @@ await build({
   sourcemap: true,
   jsx: 'automatic',
   external: [...dshExternal, 'react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'scheduler'],
+  plugins: [clientStoreCompat],
   banner: {
     js: "window.__ModuleLoader__.load({ id: 'dsh-at-file', factory: (require) => { var module = { exports: {} }; var exports = module.exports;",
   },
@@ -57,6 +83,12 @@ await build({
   },
   logLevel: 'info',
 })
+
+const clientBundle = readFileSync('lib/client.js', 'utf8')
+if (!clientBundle.includes('@deepseek-ai/dsh-client-store')
+  || !clientBundle.includes('@deepseek-ai/dsh-client-runtime/client')) {
+  throw new Error('client bundle is missing the 0.1.2/0.1.1 snapshot-store fallback')
+}
 
 import { execFileSync } from 'node:child_process'
 execFileSync('node_modules/.bin/tsc', ['-p', 'tsconfig.json'], { stdio: 'inherit' })
