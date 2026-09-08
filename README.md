@@ -53,9 +53,9 @@ The default index skips common version-control directories, IDE metadata, depend
 dsh plugin --profile web add https://github.com/sdwhwzp/dsh-at-file/archive/refs/heads/dev.tar.gz
 ```
 
-Use the same command to update an existing installation. Restart `dsh web` after installation so the Host and browser client load version `0.7.2`.
+Use the same command to update an existing installation. Restart `dsh web` after installation so the Host and browser client load version `0.7.3`.
 
-Version `0.7.2` targets Harness Alpha.4 and declares its Harness package peers from `0.1.2-alpha.4`. `dsh-client-store` is the declared client state peer; the bundled compatibility fallback does not require `dsh-client-runtime` to be installed separately.
+Version `0.7.3` targets Harness `0.1.3-alpha.1` and declares its Harness package peers as `^0.1.3-alpha.1`. `dsh-client-store` is the declared client state peer; the bundled compatibility fallback does not require `dsh-client-runtime` to be installed separately.
 
 ## File Filters
 
@@ -116,9 +116,9 @@ pnpm run test
 pnpm run build
 ```
 
-The development setup expects DeepSeek Harness `0.1.2-alpha.4` or later at `../deepseek-harness`, its default clone directory. The browser bundle uses the split `dsh-client-store` platform module, and the settings owner passes the literal `at-file` namespace to the settings service. Built files under `lib/` are committed so profile installation does not require package build scripts.
+The development setup expects a matching DeepSeek Harness `0.1.3-alpha.1` checkout at `../deepseek-harness`, its default clone directory. The browser bundle uses the split `dsh-client-store` platform module, and the settings owner passes the literal `at-file` namespace to the settings service. Built files under `lib/` are committed so profile installation does not require package build scripts.
 
-When a deployment installs this package through a local `link:`, run `node scripts/link-runtime-peers.mjs` before starting DSH. The script uses `DSH_RUNTIME_NODE_MODULES`, `~/apps/dsh-runtime/current/node_modules`, or an adjacent Harness checkout and fails if the matching Host packages cannot be found.
+When a deployment installs this package through a local `link:`, run `node scripts/link-runtime-peers.mjs` before starting DSH. The script fills missing Host dependencies from `DSH_RUNTIME_NODE_MODULES`, local dependencies, `~/apps/dsh-runtime/current/node_modules`, or an adjacent Harness checkout. It keeps existing package directories, so verify that every linked Harness peer comes from the selected runtime release before starting DSH.
 
 ## License
 
