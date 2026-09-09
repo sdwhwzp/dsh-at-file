@@ -123,3 +123,9 @@ When a deployment installs this package through a local `link:`, run `node scrip
 ## License
 
 MIT
+
+## 与宿主 `@` 源的关系
+
+本插件通过 `cordis.patch.yml` 禁用宿主的 `@deepseek-ai/dsh-client-ui-reference`，并以**同一个源名 `reference`** 注册自己的 `@` 文件源。其他插件按宿主约定用这个名字指代文件源——例如 `dsh-better-sidebar` 在侧栏选中文件时插入 `source: 'reference'` 的引用芯片——提交时由该名字在 roster 中查找 codec。若本插件换名注册，这类芯片就没有归属，提交被拒：`no serializer for reference source "reference"`。
+
+芯片的 `ref` 即 `@path` 文本，codec 原样序列化到模型；与手工键入的提及走同一条服务端解析路径。设置与文案的命名空间仍为 `at-file`，与源名无关。
