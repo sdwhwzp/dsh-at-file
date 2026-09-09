@@ -26,7 +26,15 @@ declare module '@deepseek-ai/dsh-client-ui-input-trigger/client' {
 }
 
 /** Owner source name (the lexicon and decoration routing key). */
-export const SOURCE_NAME = 'at-file'
+/**
+ * The host names its `@` file source `reference` (`dsh-client-ui-reference`),
+ * and other plugins address that source by name: `dsh-better-sidebar` inserts
+ * a chip with `source: 'reference'` when the user picks a file there. This
+ * plugin disables the host source and stands in for it, so it must answer to
+ * the same name — under any other, the sidebar's chip has no owner and the
+ * submit is rejected with `no serializer for reference source "reference"`.
+ */
+export const SOURCE_NAME = 'reference'
 
 /** Candidate cap for the menu's scrollable viewport. */
 export const MAX_CANDIDATES = 50
@@ -188,6 +196,12 @@ export function createAtFileSource(deps: AtFileSourceDeps): AtFileSource {
     },
     lexicon(session) {
       return fetches.get(session.sessionId)?.settled?.map(file => file.relative)
+    },
+    // A chip inserted by another plugin carries the `@path` mention as its
+    // ref; it reaches the model verbatim, the same text a typed mention is.
+    codec: {
+      clipboardText: ref => ref,
+      serialize: ref => Promise.resolve(ref),
     },
     subscribeLexicon(session, listener) {
       const key = session.sessionId

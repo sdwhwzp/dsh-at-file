@@ -296,3 +296,18 @@ describe('locale templates', () => {
     expect(fmt('x {a} {b}', { a: '1' })).toBe('x 1 {b}')
   })
 })
+
+describe('standing in for the host reference source', () => {
+  it('answers to the host source name so a chip another plugin inserts has an owner', () => {
+    const { source } = createAtFileSource({ search: vi.fn(async () => []), now: () => 0 })
+    expect(source.name).toBe('reference')
+    expect(SOURCE_NAME).toBe('reference')
+  })
+
+  it('serializes a chip ref to the model verbatim, as the typed mention would be', async () => {
+    const { source } = createAtFileSource({ search: vi.fn(async () => []), now: () => 0 })
+    expect(source.codec).toBeDefined()
+    await expect(source.codec!.serialize('@"docs/a b.md"', new AbortController().signal)).resolves.toBe('@"docs/a b.md"')
+    expect(source.codec!.clipboardText('@src/index.ts')).toBe('@src/index.ts')
+  })
+})

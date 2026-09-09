@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 /** Arrow-right directory navigation behavior and DOM bridge coverage. */
+import { SOURCE_NAME } from '../src/client/source.ts'
 import { useState } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot, type Root } from 'react-dom/client'
@@ -20,8 +21,8 @@ function menu(candidate: { value?: string; atFileKind?: 'file' | 'dir' } = { val
     open: true,
     hit: { trigger: '@', query: 'src', position: 'leading', span: { start: 0, end: 4, draftRev: 4 } },
     generation: 1,
-    groups: [{ source: 'at-file', status: 'ready', items: [{ name: 'src', ...candidate }] }],
-    highlight: { source: 'at-file', index: 0 },
+    groups: [{ source: SOURCE_NAME, status: 'ready', items: [{ name: 'src', ...candidate }] }],
+    highlight: { source: SOURCE_NAME, index: 0 },
   }
 }
 
@@ -90,8 +91,8 @@ describe('folder navigation decision', () => {
       { ...menu(), highlight: { source: 'other', index: 0 } },
       { ...menu(), hit: { ...menu().hit!, span: { start: 0, end: 4, draftRev: 3 } } },
       { ...menu(), groups: [] },
-      { ...menu(), groups: [{ source: 'at-file', status: 'pending', items: [] }] },
-      { ...menu(), highlight: { source: 'at-file', index: 2 } },
+      { ...menu(), groups: [{ source: SOURCE_NAME, status: 'pending', items: [] }] },
+      { ...menu(), highlight: { source: SOURCE_NAME, index: 2 } },
       menu({ value: 'src', atFileKind: 'file' }),
       menu({ atFileKind: 'dir' }),
     ]
