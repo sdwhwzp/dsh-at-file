@@ -2,3 +2,6 @@ node_modules/
 coverage/
 *.tsbuildinfo
 .DS_Store
+
+# packed release artifacts (rebuilt by pnpm pack; never commit)
+*.tgz
