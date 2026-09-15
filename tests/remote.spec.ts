@@ -6,6 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { AT_FILE_REMOTE } from '../src/client/remote.ts'
+import { AT_FILE_INVOCATIONS } from '../src/contract.ts'
 
 describe('AT_FILE_REMOTE', () => {
   it('owns search and the plugin settings endpoints', () => {
@@ -18,6 +19,15 @@ describe('AT_FILE_REMOTE', () => {
     for (const descriptor of AT_FILE_REMOTE.descriptors) {
       expect(descriptor.result.mode).toBe('strict')
       for (const parameter of descriptor.parameters) expect(parameter.codec.mode).toBe('strict')
+    }
+  })
+
+  it('supplies 0.1.6 factories with the same wire validation as older Hosts', () => {
+    for (const descriptor of AT_FILE_INVOCATIONS) {
+      for (const codec of [descriptor.result, ...descriptor.parameters.map(parameter => parameter.codec)]) {
+        expect(codec.create()).toBe(codec.schema)
+        expect(codec.create().safeParse(null).success).toBe(false)
+      }
     }
   })
 

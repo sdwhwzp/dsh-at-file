@@ -109,8 +109,13 @@ export const atFileSettingsUpdateSchema = z.discriminatedUnion('field', [
   z.object({ field: z.literal('ignorePastedMentions'), value: z.boolean() }).readonly(),
 ])
 
+/** Keep the eager codec for older Hosts and expose the 0.1.6 factory. */
+function strictCodec(typeSymbol: string, schema: z.ZodType) {
+  return { mode: 'strict' as const, typeSymbol, schema, create: () => schema }
+}
+
 /** The atFile Remote namespace's strict invocation descriptors. */
-export const AT_FILE_INVOCATIONS: readonly InvocationDescriptor[] = [
+export const AT_FILE_INVOCATIONS = [
   {
     id: 'dsh-at-file#atFile/search',
     service: 'atFile',
@@ -125,15 +130,11 @@ export const AT_FILE_INVOCATIONS: readonly InvocationDescriptor[] = [
         lookup: 'agent',
         // The type symbol must equal the agent lookup provider's wire identity
         // exactly — the gateway's strict path rejects a mismatched symbol.
-        codec: { mode: 'strict', typeSymbol: '@deepseek-ai/dsh-session/types#SessionId', schema: sessionIdSchema },
+        codec: strictCodec('@deepseek-ai/dsh-session/types#SessionId', sessionIdSchema),
       },
     ],
     cancellation: { parameter: 'signal' },
-    result: {
-      mode: 'strict',
-      typeSymbol: 'dsh-at-file#FileEntry[]',
-      schema: z.array(fileEntrySchema),
-    },
+    result: strictCodec('dsh-at-file#FileEntry[]', z.array(fileEntrySchema)),
   },
   {
     id: 'dsh-at-file#atFile/getSettings',
@@ -142,11 +143,7 @@ export const AT_FILE_INVOCATIONS: readonly InvocationDescriptor[] = [
     method: 'getSettings',
     invocation: { kind: 'direct' },
     parameters: [],
-    result: {
-      mode: 'strict',
-      typeSymbol: 'dsh-at-file#AtFileSettings',
-      schema: atFileSettingsSchema,
-    },
+    result: strictCodec('dsh-at-file#AtFileSettings', atFileSettingsSchema),
   },
   {
     id: 'dsh-at-file#atFile/updateSettings',
@@ -159,17 +156,9 @@ export const AT_FILE_INVOCATIONS: readonly InvocationDescriptor[] = [
         name: 'update',
         wire: 'update',
         source: 'json',
-        codec: {
-          mode: 'strict',
-          typeSymbol: 'dsh-at-file#AtFileSettingsUpdate',
-          schema: atFileSettingsUpdateSchema,
-        },
+        codec: strictCodec('dsh-at-file#AtFileSettingsUpdate', atFileSettingsUpdateSchema),
       },
     ],
-    result: {
-      mode: 'strict',
-      typeSymbol: 'dsh-at-file#AtFileSettings',
-      schema: atFileSettingsSchema,
-    },
+    result: strictCodec('dsh-at-file#AtFileSettings', atFileSettingsSchema),
   },
-]
+] satisfies readonly InvocationDescriptor[]

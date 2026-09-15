@@ -6,7 +6,6 @@
  * boundary; the Host only marks validated paths at `agent/pre-step`.
  */
 import { z } from 'zod';
-import type { InvocationDescriptor } from '@deepseek-ai/dsh-typert-protocol';
 /** One indexed workspace entry (a file or a directory), with its display path. */
 export interface FileEntry {
     readonly path: string;
@@ -153,4 +152,59 @@ export declare const atFileSettingsUpdateSchema: z.ZodDiscriminatedUnion<[z.ZodR
     value: z.ZodBoolean;
 }, z.core.$strip>>], "field">;
 /** The atFile Remote namespace's strict invocation descriptors. */
-export declare const AT_FILE_INVOCATIONS: readonly InvocationDescriptor[];
+export declare const AT_FILE_INVOCATIONS: ({
+    id: string;
+    service: string;
+    namespace: string;
+    method: string;
+    invocation: {
+        kind: "direct";
+    };
+    parameters: {
+        name: string;
+        wire: string;
+        source: "lookup";
+        lookup: string;
+        codec: {
+            mode: "strict";
+            typeSymbol: string;
+            schema: z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+            create: () => z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+        };
+    }[];
+    cancellation: {
+        parameter: "signal";
+    };
+    result: {
+        mode: "strict";
+        typeSymbol: string;
+        schema: z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+        create: () => z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+    };
+} | {
+    id: string;
+    service: string;
+    namespace: string;
+    method: string;
+    invocation: {
+        kind: "direct";
+    };
+    parameters: {
+        name: string;
+        wire: string;
+        source: "json";
+        codec: {
+            mode: "strict";
+            typeSymbol: string;
+            schema: z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+            create: () => z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+        };
+    }[];
+    result: {
+        mode: "strict";
+        typeSymbol: string;
+        schema: z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+        create: () => z.ZodType<unknown, unknown, z.core.$ZodTypeInternals<unknown, unknown>>;
+    };
+    cancellation?: undefined;
+})[];
