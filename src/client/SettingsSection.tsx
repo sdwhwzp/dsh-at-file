@@ -120,8 +120,7 @@ export function AtFileSection({
     snapshot as typeof snapshot & { readonly recentWorkspaceId?: string }
   ).recentWorkspaceId)
   const currentCwd = useSessions(snapshot => {
-    const current = snapshot.current
-    return current === undefined ? undefined : snapshot.byId[current]?.cwd
+    return Object.values(snapshot.byId).find(session => (session.retainedBy.mainView ?? 0) > 0)?.cwd
   })
   const workspaceOptions = useMemo<WorkspaceOption[]>(() => {
     const rows = workspaces.map(workspace => ({ path: workspace.path, title: workspace.title }))

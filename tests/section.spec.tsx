@@ -60,8 +60,8 @@ function props(over: {
       }
   const items = [...over.workspaces ?? []]
   const sessionState = over.currentCwd === undefined
-    ? { current: undefined, byId: {} }
-    : { current: 'current', byId: { current: { cwd: over.currentCwd } } }
+    ? { byId: {} }
+    : { byId: { current: { cwd: over.currentCwd, retainedBy: { mainView: 1 } } } }
   const stub = {
     useScope: <T,>(selector: (snapshot: { value?: AtFileSettings }) => T): T => selector({ value }),
     useSessions: <T,>(selector: (snapshot: typeof sessionState) => T): T => selector(sessionState),

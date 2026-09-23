@@ -1,5 +1,7 @@
 # dsh-at-file
 
+Harness 0.1.7 将文件选择器偏好保存在插件 profile 行的 `preferences` 字段。升级时将旧 `at-file` 设置段迁入该字段；专用 `atFile` RPC 保持原有接口。
+
 > [!IMPORTANT]
 > 最新版官方 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 已经内置 `@file` 和 `@session` 引用功能。新安装请优先使用官方实现；本插件继续供现有环境使用，后续随缘维护。
 
@@ -53,9 +55,9 @@ DeepSeek Harness Web 界面的工作区路径引用插件。在输入框输入 `
 dsh plugin --profile web add https://github.com/sdwhwzp/dsh-at-file/archive/refs/heads/dev.tar.gz
 ```
 
-已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.7.3`。
+已有安装也使用这条命令更新。安装完成后重启 `dsh web`，确保 Host 和浏览器客户端加载 `0.7.4-dsh.20260923.1`。
 
-`0.7.3` 面向 Harness `0.1.3-alpha.1`，Harness 包的 peer 依赖声明为 `^0.1.3-alpha.1`。客户端状态依赖声明为 `dsh-client-store`；bundle 中的兼容回退不要求单独安装 `dsh-client-runtime`。
+`0.7.4-dsh.20260923.1` 面向 Harness `0.1.7-alpha.2`，Harness 包的 peer 依赖声明为 `^0.1.7-alpha.2`。客户端状态依赖声明为 `dsh-client-store`；bundle 中的兼容回退不要求单独安装 `dsh-client-runtime`。
 
 ## 文件过滤
 
@@ -116,7 +118,7 @@ pnpm run test
 pnpm run build
 ```
 
-开发环境要求 `../deepseek-harness` 为同版 DeepSeek Harness `0.1.3-alpha.1` 检出，与该仓库的默认克隆目录一致。浏览器 bundle 使用拆分后的 `dsh-client-store` 平台模块，设置所有者把字面量 `at-file` 命名空间交给 settings 服务。`lib/` 中的构建产物会提交到仓库，因此 profile 安装过程无需运行包构建脚本。
+开发环境要求 `../deepseek-harness` 为同版 DeepSeek Harness `0.1.7-alpha.2` 检出，与该仓库的默认克隆目录一致。浏览器 bundle 使用拆分后的 `dsh-client-store` 平台模块，设置所有者更新 Loader 配置行中的 `preferences`。`lib/` 中的构建产物会提交到仓库，因此 profile 安装过程无需运行包构建脚本。
 
 部署环境通过本地 `link:` 安装本插件时，启动 DSH 前运行 `node scripts/link-runtime-peers.mjs`。脚本从 `DSH_RUNTIME_NODE_MODULES`、本地依赖、`~/apps/dsh-runtime/current/node_modules` 或相邻的 Harness 检出补齐缺少的 Host 依赖。它会保留已有包目录，因此启动 DSH 前应确认每个 Harness peer 都链接到选定的运行时版本。
 

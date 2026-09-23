@@ -16,7 +16,7 @@ import type {} from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-agent'
 import { AtFileRuntime } from './runtime.ts'
 import { TYPERT_MANIFEST } from './typert.ts'
-import { registerAtFileSettings } from './settings.ts'
+import { AtFileSettingsSchema, registerAtFileSettings } from './settings.ts'
 import { mentionPreStep } from './mention.ts'
 import {
   DEFAULT_IGNORE_DIRS,
@@ -51,6 +51,7 @@ export interface Config {
 export const Config = z.object({
   maxIndexedFiles: z.natural().min(1).default(5000),
   ignoreDirs: z.array(z.string()).default([...DEFAULT_IGNORE_DIRS]),
+  preferences: AtFileSettingsSchema.default({}),
 })
 
 /**

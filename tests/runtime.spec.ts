@@ -34,12 +34,12 @@ function originalOf(service: object): object {
 function settingsProvider(read: () => AtFileSettings) {
   let patch: Partial<AtFileSettings> = {}
   return {
-    register: () => ({
-      get: () => ({ ...read(), ...patch }),
-      watch: () => () => {},
-      update: async (next: Partial<AtFileSettings>) => { patch = { ...patch, ...next } },
-      replace: async () => {},
-    }),
+    describe: () => [{ ns: 'test-at-file', value: { preferences: { ...read(), ...patch } }, revision: 7 }],
+    update: async (ns: string, next: { preferences: Partial<AtFileSettings> }, revision: number) => {
+      expect(ns).toBe('test-at-file')
+      expect(revision).toBe(7)
+      patch = { ...patch, ...next.preferences }
+    },
   }
 }
 
@@ -55,10 +55,10 @@ async function mount(
 ) {
   const registryFiber = ctx.plugin(TypertRegistry)
   await registryFiber
-  ctx.provide('settings', settingsProvider(readSettings))
+  ctx.provide('settings', settingsProvider(readSettings) as never)
   ctx.provide('agents', { roots: () => [] })
-  const fiber = ctx.plugin({ inject: plugin.inject, apply: plugin.apply }, config)
-  await fiber
+  const fiber = await ctx.plugin({ Config: plugin.Config, inject: plugin.inject, apply: plugin.apply }, config)
+  Reflect.set(fiber, 'entry', { options: { id: 'test-at-file' } })
   return fiber
 }
 
@@ -137,11 +137,7 @@ describe('dsh-at-file host composition', () => {
     const fiber = await mount(ctx)
     try {
       const runtime = ctx.get('atFile') as AtFileRuntime
-      expect(runtime.getSettings()).toEqual({
-        enabled: true,
-        ignoreFiles: [...plugin.DEFAULT_IGNORE_FILES],
-        workspaceIgnoreFiles: [],
-      })
+      expect(runtime.getSettings()).toEqual(AtFileSettingsSchema({}))
       expect(await runtime.updateSettings({
         field: 'ignoreFiles',
         value: [' noise.log ', 'NOISE.LOG', ''],
@@ -281,6 +277,7 @@ describe('dsh-at-file host composition', () => {
     expect(plugin.Config({})).toEqual({
       maxIndexedFiles: 5000,
       ignoreDirs: [...plugin.DEFAULT_IGNORE_DIRS],
+      preferences: AtFileSettingsSchema({}),
     })
     expect(plugin.DEFAULT_IGNORE_FILES).toEqual(['desktop.ini', 'Thumbs.db', '.DS_Store'])
     expect(plugin.Config({ ignoreDirs: [] }).ignoreDirs).toEqual([])

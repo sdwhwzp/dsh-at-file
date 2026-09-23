@@ -1,12 +1,12 @@
 /**
  * The `at-file` settings namespace: the durable enable switch, pasted-mention
- * policy, and file-name filters managed from the Web settings page. Registered with the settings
- * provider at plugin load; the runtime reads the owner scope's live value on
+ * policy, and file-name filters managed from the Web settings page. Harness 0.1.7
+ * stores them on the Loader profile entry; the runtime reads the live value on
  * every call, so changes take effect without a restart.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import type { SettingsNamespace, SettingsScope } from '@deepseek-ai/dsh-settings'
+import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import type { AtFileSettings } from './contract.ts'
 import type { FileIgnoreRule } from './contract.ts'
 import { DEFAULT_IGNORE_FILES } from './defaults.ts'
@@ -45,6 +45,27 @@ export const AtFileSettingsSchema: z<AtFileSettings> = z.object({
  * @param ctx - the plugin context carrying the settings provider.
  * @returns the owner scope backing the runtime's live enable check.
  */
-export function registerAtFileSettings(ctx: Context): SettingsScope<AtFileSettings> {
-  return ctx.settings.register(AT_FILE_NAMESPACE, AtFileSettingsSchema, { applies: 'live' })
+export function registerAtFileSettings(ctx: Context): {
+  get(): AtFileSettings
+  update(patch: Partial<AtFileSettings>): Promise<void>
+} {
+  const owner = ctx.fiber as typeof ctx.fiber & {
+    entry?: { options: { id: string } }
+    config?: { preferences?: AtFileSettings }
+  }
+  return {
+    get: () => {
+      const id = owner.entry?.options.id
+      const row = id === undefined ? undefined : ctx.settings.describe().find(row => row.ns === id)
+      const value = row?.value as { preferences?: AtFileSettings } | undefined
+      return AtFileSettingsSchema(value?.preferences ?? owner.config?.preferences ?? {})
+    },
+    update: async (patch) => {
+      const id = owner.entry?.options.id
+      if (id === undefined) throw new Error('at-file settings require a Loader profile entry')
+      const descriptor = ctx.settings.describe().find(row => row.ns === id)
+      if (descriptor === undefined) throw new Error('at-file profile settings form is unavailable')
+      await ctx.settings.update(id as SettingsNamespace, { preferences: patch }, descriptor.revision)
+    },
+  }
 }

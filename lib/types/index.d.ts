@@ -27,13 +27,15 @@ export interface Config {
  * partial input, so `Config({})` yields the defaults (what the Loader does
  * for Loader compositions).
  */
-export declare const Config: z<Schemastery.ObjectS<{
-    maxIndexedFiles: z<number, number>;
-    ignoreDirs: z<string[], string[]>;
-}>, Schemastery.ObjectT<{
-    maxIndexedFiles: z<number, number>;
-    ignoreDirs: z<string[], string[]>;
-}>>;
+export declare const Config: z<Schemastery.ObjectS<NoInfer<{
+    maxIndexedFiles: z<number, number, "defined">;
+    ignoreDirs: z<string[], string[], "defined">;
+    preferences: z<import("./contract.ts").AtFileSettings, import("./contract.ts").AtFileSettings, "defined">;
+}>>, Schemastery.ObjectT<NoInfer<{
+    maxIndexedFiles: z<number, number, "defined">;
+    ignoreDirs: z<string[], string[], "defined">;
+    preferences: z<import("./contract.ts").AtFileSettings, import("./contract.ts").AtFileSettings, "defined">;
+}>>, "plain">;
 /**
  * Mount the atFile service and the pre-step path-reference marker.
  * @param ctx - host cordis context.
