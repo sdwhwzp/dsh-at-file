@@ -128,3 +128,5 @@ MIT
 ## Harness 0.2 部署
 
 本 fork 在原有运行时范围之外支持 Harness `0.2.0-rc.1`。部署时所有 Harness 依赖必须来自同一版本；账号授权、配置持久化和网页／桌面功能继续使用现有集成。
+
+升级时请移除可选的 `dsh-at-file/invariant` 配置行，详见[升级指南](docs/upgrade-guide/v0.7.4-dsh.20261028.1/remove-invariant/guide.zh.md)。

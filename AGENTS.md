@@ -13,7 +13,6 @@ src/typert.ts       strict host Typert manifest, registered via ctx.typert.regis
 src/settings.ts     the `at-file` settings namespace (enable switch and scoped file filters)
 src/files.ts        bounded workspace path index walk over node:fs; symlink targets stay inside the workspace
 src/defaults.ts     built-in ignored directory names for IDE metadata, caches, dependencies, and build output
-src/invariant.ts    ./invariant companion (real `No runtime invariant:` reason)
 src/client/         browser half, served as the single file /plugins/dsh-at-file/client.js
   index.ts          apply: $mount the Remote contribution, register the @ source + dock + section + locale + styles
   remote.ts         hand-written TypertRemoteContribution + ctx.remote.atFile type merges

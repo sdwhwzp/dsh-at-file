@@ -136,3 +136,5 @@ Host and browser share the same strict RPC descriptors. Their codecs expose the 
 ## Harness 0.2 deployment
 
 This fork accepts Harness `0.2.0-rc.1` in addition to its existing runtime peer ranges. Deploy all Harness peers from one runtime release; account authorization, settings persistence, and browser/desktop behavior remain owned by the existing integrations.
+
+Harness 0.2.2 compatibility: [invariant companion migration](docs/upgrade-guide/v0.7.4-dsh.20261028.1/remove-invariant/guide.md).

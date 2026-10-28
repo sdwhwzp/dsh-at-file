@@ -26,21 +26,21 @@ describe('profile bundle', () => {
       Object.entries(manifest.peerDependencies ?? {}).filter(([name]) => name.startsWith('@deepseek-ai/dsh-')),
     )
 
-    expect(manifest.dsh?.engines?.dsh).toBe('>=0.1.7-alpha.2 <0.2.0')
+    expect(manifest.dsh?.engines?.dsh).toBe('>=0.1.7-alpha.2 <0.2.0 || ^0.2.0-rc.1 || ^0.2.2-alpha.2')
     expect(dshPeers).toEqual({
-      '@deepseek-ai/dsh-agent': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-api-remotes': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-connection': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-locale': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-store': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-ui-conversation': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-ui-input-trigger': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-ui-settings': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-client-ui-slots': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-llm': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-settings': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-typert-protocol': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
-      '@deepseek-ai/dsh-typert-registry': '^0.1.7-alpha.2 || ^0.2.0-rc.1',
+      '@deepseek-ai/dsh-agent': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-api-remotes': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-connection': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-locale': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-store': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-ui-conversation': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-ui-input-trigger': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-ui-settings': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-client-ui-slots': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-llm': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-settings': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-typert-protocol': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
+      '@deepseek-ai/dsh-typert-registry': '^0.1.7-alpha.2 || ^0.2.0-rc.1 || ^0.2.2-alpha.2',
     })
     expect(manifest.peerDependencies).not.toHaveProperty('@deepseek-ai/dsh-client-runtime')
     expect(manifest.peerDependenciesMeta).not.toHaveProperty('@deepseek-ai/dsh-client-runtime')

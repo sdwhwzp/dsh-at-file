@@ -28,7 +28,7 @@ export type FolderNavigatorProps = PropsRuntime<'conversation.input.overlay'> & 
 export interface FolderNavigationInput {
   readonly draft: string
   readonly draftRev: number
-  readonly phase: 'plain' | 'adjudicating' | 'claimed' | 'submitting'
+  readonly phase: 'plain' | 'adjudicating' | 'claimed' | 'submitting' | 'sending'
 }
 
 /** Textarea selection at the moment ArrowRight is pressed. */

@@ -103,6 +103,7 @@ describe('folder navigation decision', () => {
     expect(folderNavigationTarget(menu(), INPUT, { start: 3, end: 3 })).toBeUndefined()
     expect(folderNavigationTarget(menu(), { ...INPUT, phase: 'adjudicating' }, { start: 4, end: 4 })).toBeUndefined()
     expect(folderNavigationTarget(menu(), { ...INPUT, phase: 'submitting' }, { start: 4, end: 4 })).toBeUndefined()
+    expect(folderNavigationTarget(menu(), { ...INPUT, phase: 'sending' }, { start: 4, end: 4 })).toBeUndefined()
   })
 
   it('accepts only an unmodified, unclaimed ArrowRight key', () => {
